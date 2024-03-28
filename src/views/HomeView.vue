@@ -4,7 +4,7 @@ import PageFooter from '@/components/layout/footer/page-footer.vue'
 </script>
 
 <template>
-  <n-layout>
+  <n-layout position="absolute">
     <page-header />
     <router-view />
     <page-footer />

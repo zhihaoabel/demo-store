@@ -31,7 +31,7 @@ export default defineComponent({
 
 
 <template>
-  <n-card :bordered="false" title="Summary">
+  <n-card :bordered="false" title="Summary" class="p-8">
     <!--    header，title旁边的内容 -->
     <template #header-extra>
     

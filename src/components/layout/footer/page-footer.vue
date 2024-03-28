@@ -15,7 +15,7 @@ export default defineComponent({
 
 <template>
   <!--  关于-->
-  <n-layout-footer>
+  <n-layout-footer position="absolute">
     <div class="text-center">
       <span>© {{year}}. All rights reserved.</span>
     </div>
@@ -23,5 +23,13 @@ export default defineComponent({
 </template>
 
 <style scoped>
+.n-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
+.n-layout-content {
+  flex-grow: 1;
+}
 </style>
