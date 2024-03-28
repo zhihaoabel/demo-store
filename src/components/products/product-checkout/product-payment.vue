@@ -4,26 +4,25 @@ import { onGooglePayLoaded } from '@/utils/pay-utils.js'
 
 export default defineComponent({
   name: 'ProductPayment',
-  components: {  },
+  components: {},
   
   setup() {
     
     onMounted(() => {
-      const script = document.createElement('script');
-      script.src = 'https://pay.google.com/gp/p/js/pay.js';
-      script.async = true;
-      document.head.appendChild(script);
+      const script = document.createElement('script')
+      script.src = 'https://pay.google.com/gp/p/js/pay.js'
+      script.async = true
+      document.head.appendChild(script)
       
       script.onload = () => {
         onGooglePayLoaded()
-      };
+      }
     })
     
     return {}
   },
   
-  methods: {
-  },
+  methods: {}
   
 })
 </script>
@@ -35,13 +34,13 @@ export default defineComponent({
       content: true,
     }"
           class="p-8"
-          header-class="flex-col border-b "
+          header-class="flex-col border-b"
           header-extra-class="w-full"
           size="large"
           title="Payments"
   >
     <template #header-extra>
-      <div id="google-container" class="google-apple-pay-container flex-col w-full ">
+      <div id="google-container" class="google-apple-pay-container flex-col w-full mt-4">
       </div>
     </template>
     Card Content
