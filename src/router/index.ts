@@ -31,11 +31,11 @@ const router = createRouter({
           path: '/checkout',
           name: 'checkout',
           component: () => import('../views/CheckoutView.vue')
-        },
+        }
       ]
     }
   ],
-  scrollBehavior () {
+  scrollBehavior() {
     return { top: 0 }
   }
 })

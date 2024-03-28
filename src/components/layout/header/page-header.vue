@@ -7,7 +7,7 @@ import PageHeaderRight from '@/components/layout/header/page-header-right.vue'
   <n-layout-header class="border-b">
     <div class="header-container flex items-center justify-between px-4 max-h-20">
       <div class="logo-container">
-        <router-link to="/"><img class="store-logo" alt="store logo" src="/logo.png" width="75"></router-link>
+        <router-link to="/"><img alt="store logo" class="store-logo" src="/logo.png" width="75"></router-link>
       </div>
       <page-header-right />
     </div>

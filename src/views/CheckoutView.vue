@@ -7,8 +7,8 @@ import ProductPayment from '@/components/products/product-checkout/product-payme
 <template>
   <div
     class="checkout-container grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 justify-center p-8 max-w-6xl mx-auto">
-    <product-summary class="mr-20 max-w-96" />
-    <product-payment class="col-span-2"/>
+    <product-summary class="mr-20 max-w-96 mx-auto" />
+    <product-payment class="col-span-2" />
   </div>
 </template>
 

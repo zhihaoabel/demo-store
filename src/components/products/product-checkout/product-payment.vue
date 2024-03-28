@@ -1,6 +1,31 @@
-<script lang="ts" setup>
+<script lang="ts">
+import { defineComponent, onMounted } from 'vue'
+import { onGooglePayLoaded } from '@/utils/pay-utils.js'
 
-import IconGooglePay from '@/components/icons/IconGooglePay.vue'
+export default defineComponent({
+  name: 'ProductPayment',
+  components: {  },
+  
+  setup() {
+    
+    onMounted(() => {
+      const script = document.createElement('script');
+      script.src = 'https://pay.google.com/gp/p/js/pay.js';
+      script.async = true;
+      document.head.appendChild(script);
+      
+      script.onload = () => {
+        onGooglePayLoaded()
+      };
+    })
+    
+    return {}
+  },
+  
+  methods: {
+  },
+  
+})
 </script>
 
 <template>
@@ -9,23 +34,14 @@ import IconGooglePay from '@/components/icons/IconGooglePay.vue'
           :segmented="{
       content: true,
     }"
-          class="p-12"
-          header-class="flex-col border-b"
+          class="p-8"
+          header-class="flex-col border-b "
           header-extra-class="w-full"
           size="large"
           title="Payments"
   >
     <template #header-extra>
-      <div class="google-apple-pay-container flex-col w-full ">
-        <n-button class="google-pay flex items-center w-full hover:bg-slate-700 mt-6" icon-placement="right"
-                  size="large" strong>
-          Buy with Google Pay
-          <template #icon>
-            <n-icon>
-              <icon-google-pay />
-            </n-icon>
-          </template>
-        </n-button>
+      <div id="google-container" class="google-apple-pay-container flex-col w-full ">
       </div>
     </template>
     Card Content
