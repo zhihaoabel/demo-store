@@ -137,7 +137,7 @@ export function getGooglePaymentsClient() {
  * Display a Google Pay payment button after confirmation of the viewer's
  * ability to pay.
  */
-export function onGooglePayLoaded() {
+export const onGooglePayLoaded = () => {
   const paymentsClient = getGooglePaymentsClient();
   paymentsClient.isReadyToPay(getGoogleIsReadyToPayRequest())
     .then(function(response) {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
-import { onGooglePayLoaded } from '@/utils/pay-utils.js'
+import { onGooglePayLoaded } from '@/utils/pay-utils'
 
 export default defineComponent({
   name: 'ProductPayment',
