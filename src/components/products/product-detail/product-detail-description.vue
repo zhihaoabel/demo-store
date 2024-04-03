@@ -45,12 +45,12 @@ export default defineComponent({
 
 <template>
   <div class="detail-description flex items-center justify-between mb-10">
-    <div class="detail-image max-w-md">
+    <div class="detail-image max-w-md mr-4">
       <img :src="product.image" alt="product-image" class="shadow-2xl shadow-slate-400">
     </div>
-    <div class="detail-info flex flex-col justify-between items-start self-start">
+    <div class="detail-info flex flex-col justify-between items-start self-start ">
       <h1 class="text-2xl font-bold mt-12">{{ product.name }}</h1>
-      <p class="text-lg mt-10">{{ product.description }}</p>
+      <p class="text-lg mt-6">{{ product.description }}</p>
       <div class="detail-price mt-8">
         <span class="text-2xl">{{ currency.sign }} {{ product.price }}</span>
       </div>
@@ -69,9 +69,6 @@ export default defineComponent({
         <img alt="" class="icon" src="/comment.svg">
         <span class="actual-rating font-bold ml-6">
           4.0
-        </span>
-        <span class="total-rating ml-2">
-          / 5.0
         </span>
       </div>
     </div>
