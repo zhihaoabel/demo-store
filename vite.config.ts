@@ -130,6 +130,18 @@ export default defineConfig({
       deep: true
     })
   ],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://sandbox-v3-acquiring.pacypay.com',
+        rewrite(path) {
+          return path.replace(/^\/api/, '')
+        },
+        changeOrigin: true,
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
