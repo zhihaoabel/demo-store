@@ -34,7 +34,6 @@ export default defineComponent({
     const currency = useCurrencyStore()
     const cart = useCartStore()
     let cartAmount = cart.getCartAmount()
-    console.log('cartAmount', cartAmount)
     
     return {
       currency, cart, cartAmount
