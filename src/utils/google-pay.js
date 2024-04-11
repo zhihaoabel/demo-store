@@ -1,3 +1,5 @@
+import router from '../router/index.ts'
+
 /**
  * Define the version of the Google Pay API referenced when creating your
  * configuration
@@ -240,4 +242,8 @@ export function processPayment(paymentData) {
   // unless they're used for merchant-initiated transactions with user
   // consent in place.
   let paymentToken = paymentData.paymentMethodData.tokenizationData.token;
+  // 等待一秒，路由到/success页面
+  setTimeout(() => {
+    router.push({path: '/success', query: {paymentToken}});
+  }, 1000);
 }
