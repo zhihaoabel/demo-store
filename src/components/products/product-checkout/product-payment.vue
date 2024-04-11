@@ -8,26 +8,32 @@ import {
   alipay_plus,
   bancontact,
   bankTransfer,
-  boleto, dana,
+  boleto,
+  dana,
   efecty,
   giropay,
   ideal,
-  kakao_pay, maybank,
+  kakao_pay,
+  maybank,
   mercadoPago,
   multicaja,
-  myBank, ovo,
+  myBank,
+  ovo,
   oxxo,
   oxxopay,
   pagoEfectivo,
   pagosnet,
-  payU, permata,
+  payU,
+  permata,
   pix,
   poli,
+  qris,
   safetypay_cash,
   safetypay_online,
   sencillito,
   sepadd,
   servipag,
+  shopeePay,
   skrill,
   sofort,
   spei,
@@ -267,6 +273,12 @@ export default defineComponent({
     danaHandler() {
       return dana('1000')
     },
+    qrisHandler() {
+      return qris('1000')
+    },
+    shopeePayHandler() {
+      return shopeePay('1000')
+    },
     
     getPaymentHandler(payment: string) {
       const handlers: { [key: string]: any } = {
@@ -301,7 +313,9 @@ export default defineComponent({
         'OVO': this.ovoHandler,
         'Maybank': this.maybankHandler,
         'PERMATA': this.permataHandler,
-        'DANA': this.danaHandler
+        'DANA': this.danaHandler,
+        'QRIS': this.qrisHandler,
+        'ShopeePay': this.shopeePayHandler
       }
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
@@ -320,7 +334,13 @@ export default defineComponent({
         if (respCode === '20000' && respMsg === 'Success') {
           // 根据redirectUrl跳转
           const redirectUrl = data.redirectUrl
-          window.open(redirectUrl, '_blank')
+          const codeForm = data.codeForm
+          const qrCode = codeForm['codeDetails'][1]['codeValue']
+          if (codeForm && qrCode) {
+            window.open(qrCode, '_blank')
+          } else {
+            window.open(redirectUrl, '_blank')
+          }
         } else {
           console.log('Payment failed', respMsg)
         }

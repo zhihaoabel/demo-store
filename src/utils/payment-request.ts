@@ -249,3 +249,11 @@ export function permata(amount: string) {
 export function dana(amount: string) {
   return createPaymentRequestBuilder('dana', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
 }
+
+export function qris(amount: string) {
+  return createPaymentRequestBuilder('QRIS', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+}
+
+export function shopeePay(amount: string) {
+  return createPaymentRequestBuilder('ShopeePay', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+}
