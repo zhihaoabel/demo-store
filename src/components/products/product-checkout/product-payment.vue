@@ -36,6 +36,7 @@ import {
   payU,
   permata,
   pix,
+  placeOrder,
   poli,
   przelewy24,
   qris,
@@ -167,7 +168,7 @@ export default defineComponent({
       }
     }
     
-    onMounted(() => {
+    onMounted(async () => {
       // 渲染 Google pay按钮
       const script = document.createElement('script')
       script.src = 'https://pay.google.com/gp/p/js/pay.js'
@@ -178,6 +179,8 @@ export default defineComponent({
         onGooglePayLoaded()
       }
       
+      const txnId = await this.order()
+      console.log(txnId, 'txnId')
       // Onerway 收银台
       new Pacypay(transactionId, options)
     })
@@ -191,6 +194,20 @@ export default defineComponent({
   },
   
   methods: {
+    async order(): Promise<string>{
+      const req: object = await placeOrder('20')
+      return request.post('/v1/sdkTxn/doTransaction', req).then((res: any) => {
+        const { data, respCode, respMsg } = res
+        if (respCode === '20000' && respMsg === 'Success') {
+          console.log(data['transactionId'], 'txnId')
+          return data['transactionId']
+        } else {
+          console.log('Payment failed', respMsg)
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    },
     alipayHandler() {
       return alipay_plus('20')
     },
