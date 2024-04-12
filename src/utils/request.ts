@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const request = axios.create({
-  // baseURL: 'https://demo-store-one.vercel.app',
+  baseURL: import.meta.env.VITE_APP_API_BASE_URL,
   timeout: 10000
 })
 
