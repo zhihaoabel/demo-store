@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
+import { defineComponent, onMounted, type Ref, ref, watch } from 'vue'
 import { onGooglePayLoaded } from '@/utils/google-pay'
 import Pacypay from '@/utils/pacypay'
 import { useCurrencyStore } from '@/stores/currency'
@@ -7,15 +7,21 @@ import IconRedirect from '@/components/icons/IconRedirect.vue'
 import {
   alipay_plus,
   bancontact,
-  bankTransfer, blikSeamless,
-  boleto, boost,
+  bankTransfer,
+  blikSeamless,
+  boleto,
+  boost,
   dana,
-  efecty, eleven, gCash,
-  giropay, grabPay,
+  efecty,
+  eleven,
+  gCash,
+  giropay,
+  grabPay,
   ideal,
   kakao_pay,
   konbini,
-  maybank, mcash,
+  maybank,
+  mcash,
   mercadoPago,
   multicaja,
   myBank,
@@ -24,11 +30,14 @@ import {
   oxxopay,
   pagoEfectivo,
   pagosnet,
-  payEasy, payMaya,
+  payEasy,
+  payMaya,
+  payNow,
   payU,
   permata,
   pix,
-  poli, przelewy24,
+  poli,
+  przelewy24,
   qris,
   safetypay_cash,
   safetypay_online,
@@ -55,6 +64,9 @@ export default defineComponent({
     const supportedPayments = ref(currency.getSupportedPayments())
     const currentCountry = ref('')
     const showSpin = ref(false)
+    const qrCode = ref('')
+    const selectedPayment = ref('')
+    const showQrCode: Ref<boolean> = ref(false)
     
     const transactionId = '1775342394028724224'
     const options: object = {
@@ -175,7 +187,7 @@ export default defineComponent({
       currentCountry.value = currency.getCountry()
     })
     
-    return { supportedPayments, key, showSpin }
+    return { supportedPayments, key, showSpin, qrCode, selectedPayment, showQrCode }
   },
   
   methods: {
@@ -311,6 +323,9 @@ export default defineComponent({
     blikSeamlessHandler() {
       return blikSeamless('20')
     },
+    payNowHandler() {
+      return payNow('20')
+    },
     
     getPaymentHandler(payment: string) {
       const handlers: { [key: string]: any } = {
@@ -357,13 +372,17 @@ export default defineComponent({
         'PayMaya': this.payMayaHandler,
         'Eleven': this.elevenHandler,
         'Przelewy24': this.przelewy24Handler,
-        'BLIK_SEAMLESS': this.blikSeamlessHandler
+        'BLIK_SEAMLESS': this.blikSeamlessHandler,
+        'PayNow': this.payNowHandler
       }
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
     
     async doPayment(payment: string) {
       this.showSpin = true
+      this.selectedPayment = payment
+      this.showQrCode = (payment === 'PayNow') as boolean
+      console.log(this.showQrCode, 'showQrCode')
       
       const handler = this.getPaymentHandler(payment)
       const data = await handler()
@@ -372,15 +391,15 @@ export default defineComponent({
       request.post('/api/v1/txn/doTransaction', data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
+        console.log(this.showQrCode, 'showQrCode')
         
         if (respCode === '20000' && respMsg === 'Success') {
           // 根据redirectUrl跳转
           const redirectUrl = data.redirectUrl
           const codeForm = data.codeForm
-          if (codeForm) {
-            const qrCode = codeForm['codeDetails'][1]['codeValue']
-            window.open(qrCode, '_blank')
-          } else {
+          if (codeForm && payment == 'PayNow') {
+            this.qrCode = codeForm['codeDetails'][1]['codeValue']
+          } else if (redirectUrl) {
             window.open(redirectUrl, '_blank')
           }
         } else {
@@ -421,14 +440,15 @@ export default defineComponent({
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
                          :title="payment">
-          <div class="redirect-payment-container px-6">
+          <div class="redirect-payment-container px-6 flex flex-col justify-center items-center">
             <n-spin :show="showSpin">
-              <div class="icon-description flex flex-col items-center">
+              <div v-if="!(showQrCode)" class="icon-description flex flex-col items-center">
                 <icon-redirect class="max-w-24 md:w-1/12 bg-transparent opacity-50" />
                 <span class="opacity-80 ml-2">You will be redirected to complete your payment upon confirmation.</span>
               </div>
             </n-spin>
-            <n-button class="w-full mt-4 rounded" size="large" type="default" @click="doPayment(payment)">
+            <img v-if="showQrCode" :src="qrCode" alt="QR Code" />
+            <n-button v-else class="w-full mt-4 rounded" size="large" type="default" @click="doPayment(payment)">
               Confirm
             </n-button>
           </div>

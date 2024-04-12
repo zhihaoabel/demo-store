@@ -298,3 +298,7 @@ export function przelewy24(amount: string) {
 export function blikSeamless(amount: string) {
   return createPaymentRequestBuilder('BLIK_SEAMLESS', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '777123')
 }
+
+export function payNow(amount: string) {
+  return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122')
+}

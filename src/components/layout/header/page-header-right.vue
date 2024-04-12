@@ -11,8 +11,8 @@
         {{ currency.currency || 'Select currency' }}
       </n-button>
     </n-popselect>
-    <n-float-button position="relative" class="ml-4">
-      <n-badge :value="cartAmount" :offset="[6, -8]">
+    <n-float-button class="ml-4" position="relative">
+      <n-badge :offset="[6, -8]" :value="cartAmount">
         <n-icon>
           <icon-cart />
         </n-icon>
@@ -43,14 +43,15 @@ export default defineComponent({
     'currency.currency': {
       handler() {
         this.currency.setSign()
-      },
+        this.currency.setCurrency(this.currency.currency)
+      }
     },
     'cart': {
       handler() {
         this.cartAmount = this.cart.getCartAmount()
       },
-      deep: true,
-    },
+      deep: true
+    }
   }
 })
 </script>

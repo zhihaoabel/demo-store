@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 export const useCurrencyStore = defineStore('currency', {
   state: () => ({
-    currency: 'USD - United States',
+    currency: localStorage.getItem('currency') || 'USD - United States',
     options: [
       { label: 'AUD', value: 'AUD - Australia', sign: 'A$' },
       { label: 'BOB', value: 'BOB - Bolivia', sign: 'Bs' },
@@ -58,7 +58,7 @@ export const useCurrencyStore = defineStore('currency', {
       PLN: ['PayU', 'Przelewy24', 'Trustly', 'BLIK', 'BLIK_SEAMLESS'],
       RON: [],
       SEK: ['iDEAL', 'Trustly'],
-      SG: ['eNETS', 'GrabPay'],
+      SGD: ['PayNow', 'GrabPay'],
       THB: ['Kakao_Pay', 'TrueMoney Wallet', 'Rabbit_Line_pay', 'PromptPay', 'KRUNGSRI_ONLINE', 'BUALUANG_IBANKING', 'CITI_POINTS', 'K_PLUS'],
       USD: ['Alipay+', 'Kakao_Pay', 'Boleto', 'Bank Transfer', 'MercadoPago', 'PIX', 'Servipag', 'Sencillito', 'Webpay', 'Multicaja', 'Efecty', 'SPEI', 'OXXO', 'OXXOPAY', 'PagoEfectivo', 'safetypay-cash', 'safetypay-online', 'Pagosnet', 'iDEAL', 'Skrill', ],
       VND: ['VIET_QR', 'ATM_CARD', 'PAYME', 'MOMO']
@@ -98,6 +98,8 @@ export const useCurrencyStore = defineStore('currency', {
 
   actions: {
     setCurrency(currency: string) {
+      // 保存在localStorage
+      localStorage.setItem('currency', currency)
       this.currency = currency
     },
 
