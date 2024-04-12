@@ -506,3 +506,15 @@ yarn-error.log
 ### vscode
 .vscode/*
 .vercel
+/.vite/deps/_metadata.json
+/.vite/deps/chunk-AYVSL3LM.js
+/.vite/deps/chunk-AYVSL3LM.js.map
+/.vite/deps/chunk-GU3YDFVY.js
+/.vite/deps/chunk-GU3YDFVY.js.map
+/.vite/deps/package.json
+/.vite/deps/pinia.js
+/.vite/deps/pinia.js.map
+/.vite/deps/vue.js
+/.vite/deps/vue.js.map
+/.vite/deps/vue-router.js
+/.vite/deps/vue-router.js.map
