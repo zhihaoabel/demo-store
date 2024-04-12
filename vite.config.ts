@@ -133,7 +133,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VUE_APP_API_BASE_URL || 'https://sandbox-v3-acquiring.pacypay.com',
+        target: 'https://sandbox-v3-acquiring.pacypay.com',
         rewrite(path) {
           return path.replace(/^\/api/, '')
         },
