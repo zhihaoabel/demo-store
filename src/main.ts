@@ -13,4 +13,6 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 console.log(import.meta.env.VITE_APP_API_BASE_URL, 'base url')
+console.log(import.meta.env.VITE_APP_TITLE, 'app name')
+
 app.mount('#app')
