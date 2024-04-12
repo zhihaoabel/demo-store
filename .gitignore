@@ -505,3 +505,4 @@ yarn-error.log
 
 ### vscode
 .vscode/*
+.vercel
