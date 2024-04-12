@@ -131,7 +131,6 @@ export default defineConfig({
     })
   ],
   server: {
-    port: 5173,
     proxy: {
       '/api': {
         target: 'https://sandbox-v3-acquiring.pacypay.com',
