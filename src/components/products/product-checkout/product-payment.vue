@@ -7,14 +7,15 @@ import IconRedirect from '@/components/icons/IconRedirect.vue'
 import {
   alipay_plus,
   bancontact,
-  bankTransfer,
-  boleto,
+  bankTransfer, blikSeamless,
+  boleto, boost,
   dana,
-  efecty,
-  giropay,
+  efecty, eleven, gCash,
+  giropay, grabPay,
   ideal,
   kakao_pay,
-  maybank,
+  konbini,
+  maybank, mcash,
   mercadoPago,
   multicaja,
   myBank,
@@ -23,10 +24,11 @@ import {
   oxxopay,
   pagoEfectivo,
   pagosnet,
+  payEasy, payMaya,
   payU,
   permata,
   pix,
-  poli,
+  poli, przelewy24,
   qris,
   safetypay_cash,
   safetypay_online,
@@ -279,6 +281,36 @@ export default defineComponent({
     shopeePayHandler() {
       return shopeePay('1000')
     },
+    konbiniHandler() {
+      return konbini('20')
+    },
+    payEasyHandler() {
+      return payEasy('20')
+    },
+    mcashHandler() {
+      return mcash('20')
+    },
+    boostHandler() {
+      return boost('20')
+    },
+    gCashHandler() {
+      return gCash('20')
+    },
+    grabPayHandler() {
+      return grabPay('20')
+    },
+    payMayaHandler() {
+      return payMaya('20')
+    },
+    elevenHandler() {
+      return eleven('20')
+    },
+    przelewy24Handler() {
+      return przelewy24('20')
+    },
+    blikSeamlessHandler() {
+      return blikSeamless('20')
+    },
     
     getPaymentHandler(payment: string) {
       const handlers: { [key: string]: any } = {
@@ -315,7 +347,17 @@ export default defineComponent({
         'PERMATA': this.permataHandler,
         'DANA': this.danaHandler,
         'QRIS': this.qrisHandler,
-        'ShopeePay': this.shopeePayHandler
+        'ShopeePay': this.shopeePayHandler,
+        'Konbini': this.konbiniHandler,
+        'PayEasy': this.payEasyHandler,
+        'MCASH': this.mcashHandler,
+        'Boost': this.boostHandler,
+        'GCash': this.gCashHandler,
+        'GrabPay': this.grabPayHandler,
+        'PayMaya': this.payMayaHandler,
+        'Eleven': this.elevenHandler,
+        'Przelewy24': this.przelewy24Handler,
+        'BLIK_SEAMLESS': this.blikSeamlessHandler
       }
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
@@ -335,8 +377,8 @@ export default defineComponent({
           // 根据redirectUrl跳转
           const redirectUrl = data.redirectUrl
           const codeForm = data.codeForm
-          const qrCode = codeForm['codeDetails'][1]['codeValue']
-          if (codeForm && qrCode) {
+          if (codeForm) {
+            const qrCode = codeForm['codeDetails'][1]['codeValue']
             window.open(qrCode, '_blank')
           } else {
             window.open(redirectUrl, '_blank')

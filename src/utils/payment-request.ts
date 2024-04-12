@@ -28,10 +28,11 @@ export function buildBillingInformation(country: string = currency.getCountry(),
   return JSON.stringify(billingInformation)
 }
 
-export function buildLpmsInfo(lpmsType: string, iban: string = '') {
+export function buildLpmsInfo(lpmsType: string, iban: string = '',  walletAccountId: string = '') {
   const lpmsInfo: { [key: string]: string } = {}
   lpmsInfo['lpmsType'] = lpmsType
   lpmsInfo['iban'] = iban
+  lpmsInfo['walletAccountId'] = walletAccountId
 
   return JSON.stringify(lpmsInfo)
 }
@@ -89,10 +90,10 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   return JSON.stringify(txnOrderMsg)
 }
 
-async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '') {
+async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '') {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
-    .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban))
+    .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
     .setMerchantNo(MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
@@ -256,4 +257,44 @@ export function qris(amount: string) {
 
 export function shopeePay(amount: string) {
   return createPaymentRequestBuilder('ShopeePay', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+}
+
+export function konbini(amount: string) {
+  return createPaymentRequestBuilder('Konbini', 'JP', '8522847035', amount, 'JPY', '86258406122')
+}
+
+export function payEasy(amount: string) {
+  return createPaymentRequestBuilder('PayEasy', 'JP', '8522847035', amount, 'JPY', '86258406122')
+}
+
+export function mcash(amount: string) {
+  return createPaymentRequestBuilder('MCASH', 'MY', '8522847035', amount, 'MYR', '86258406122')
+}
+
+export function boost(amount: string) {
+  return createPaymentRequestBuilder('Boost', 'MY', '8522847035', amount, 'MYR', '86258406122')
+}
+
+export function gCash(amount: string) {
+  return createPaymentRequestBuilder('GCash', 'PH', '8522847035', amount, 'PHP', '123456789012')
+}
+
+export function grabPay(amount: string) {
+  return createPaymentRequestBuilder('GrabPay', 'PH', '8522847035', amount, 'PHP', '123456789012')
+}
+
+export function payMaya(amount: string) {
+  return createPaymentRequestBuilder('PayMaya', 'PH', '8522847035', amount, 'PHP', '123456789012')
+}
+
+export function eleven(amount: string) {
+  return createPaymentRequestBuilder('ELEVEN', 'PH', '8522847035', amount, 'PHP', '123456789012')
+}
+
+export function przelewy24(amount: string) {
+  return createPaymentRequestBuilder('Przelewy24', 'PL', '8522847035', amount, 'PLN', '86258406122')
+}
+
+export function blikSeamless(amount: string) {
+  return createPaymentRequestBuilder('BLIK_SEAMLESS', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '777123')
 }
