@@ -40,7 +40,7 @@ export const allowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
 export const tokenizationSpecification = {
   type: 'PAYMENT_GATEWAY',
   parameters: {
-    'gateway': 'example',
+    'gateway': 'ronghan',
     'gatewayMerchantId': 'exampleGatewayMerchantId'
   }
 };
@@ -113,8 +113,8 @@ export function getGooglePaymentDataRequest() {
   paymentDataRequest.merchantInfo = {
     // @todo a merchant ID is available for a production environment after approval by Google
     // See {@link https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist|Integration checklist}
-    merchantId: 'BCR2DN4TQGU3FG3W',
-    merchantName: 'Ronhan'
+    merchantId: '800209',
+    merchantName: 'Abel'
   };
 
   return paymentDataRequest;
@@ -242,8 +242,9 @@ export function processPayment(paymentData) {
   // unless they're used for merchant-initiated transactions with user
   // consent in place.
   let paymentToken = paymentData.paymentMethodData.tokenizationData.token;
+  console.log(JSON.stringify(JSON.stringify(paymentToken)), 'paymentToken');
   // 等待一秒，路由到/success页面
   setTimeout(() => {
-    router.push({path: '/success', query: {paymentToken}});
+    router.push({path: '/success'});
   }, 1000);
 }
