@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const request = axios.create({
-  baseURL: 'https://demo-store-one.vercel.app/api',
+  baseURL: 'https://demo-store-one.vercel.app',
   timeout: 10000
 })
 
