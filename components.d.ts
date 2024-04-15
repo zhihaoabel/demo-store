@@ -7,16 +7,23 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    CommonCopyButton: typeof import('./src/components/common/common-copy-button.vue')['default']
+    CommonToast: typeof import('./src/components/common/common-toast.vue')['default']
     HelloWorld: typeof import('./src/components/examples/HelloWorld.vue')['default']
     IconArrowHook: typeof import('./src/components/icons/IconArrowHook.vue')['default']
     IconCart: typeof import('./src/components/icons/IconCart.vue')['default']
+    IconClose: typeof import('./src/components/icons/IconClose.vue')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']
+    IconCopy: typeof import('./src/components/icons/IconCopy.vue')['default']
     IconCurrency: typeof import('./src/components/icons/currency/IconCurrency.vue')['default']
+    IconCustomerService: typeof import('./src/components/icons/IconCustomerService.vue')['default']
     IconDocumentation: typeof import('./src/components/icons/IconDocumentation.vue')['default']
     IconDollar: typeof import('./src/components/icons/currency/IconDollar.vue')['default']
     IconEcosystem: typeof import('./src/components/icons/IconEcosystem.vue')['default']
     IconEuro: typeof import('./src/components/icons/currency/IconEuro.vue')['default']
     IconGooglePay: typeof import('./src/components/icons/IconGooglePay.vue')['default']
+    IconHoldCard: typeof import('./src/components/icons/IconHoldCard.vue')['default']
+    IconPaste: typeof import('./src/components/icons/IconPaste.vue')['default']
     IconRedirect: typeof import('./src/components/icons/IconRedirect.vue')['default']
     IconShoppingCart: typeof import('./src/components/icons/IconShoppingCart.vue')['default']
     IconSupport: typeof import('./src/components/icons/IconSupport.vue')['default']
@@ -32,8 +39,11 @@ declare module 'vue' {
     NLayout: typeof import('naive-ui')['NLayout']
     NLayoutFooter: typeof import('naive-ui')['NLayoutFooter']
     NLayoutHeader: typeof import('naive-ui')['NLayoutHeader']
+    NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NPopselect: typeof import('naive-ui')['NPopselect']
+    NQrCode: typeof import('naive-ui')['NQrCode']
     NSpin: typeof import('naive-ui')['NSpin']
+    NTooltip: typeof import('naive-ui')['NTooltip']
     PageFooter: typeof import('./src/components/layout/footer/page-footer.vue')['default']
     PageHeader: typeof import('./src/components/layout/header/page-header.vue')['default']
     PageHeaderRight: typeof import('./src/components/layout/header/page-header-right.vue')['default']
@@ -46,6 +56,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TheWelcome: typeof import('./src/components/examples/TheWelcome.vue')['default']
+    Toast: typeof import('./src/components/common/Toast.vue')['default']
     WelcomeItem: typeof import('./src/components/examples/WelcomeItem.vue')['default']
   }
 }

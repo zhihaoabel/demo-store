@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, type Ref, ref, watch } from 'vue'
+import { defineComponent, h, onMounted, type Ref, ref, watch } from 'vue'
 import { onGooglePayLoaded } from '@/utils/google-pay'
 import Pacypay from '@/utils/pacypay'
 import { useCurrencyStore } from '@/stores/currency'
@@ -53,11 +53,16 @@ import {
   webpay
 } from '@/utils/payment-request'
 import request from '@/utils/request'
+import type { MessageRenderMessage } from 'naive-ui'
+import { NAlert, useMessage } from 'naive-ui'
+import router from '@/router'
+import CommonToast from '@/components/common/common-toast.vue'
+import CommonCopyButton from '@/components/common/common-copy-button.vue'
 
 
 export default defineComponent({
   name: 'ProductPayment',
-  components: { IconRedirect },
+  components: { CommonCopyButton, CommonToast, IconRedirect },
   
   setup() {
     const currency = useCurrencyStore()
@@ -68,18 +73,47 @@ export default defineComponent({
     const qrCode = ref('')
     const selectedPayment = ref('')
     const showQrCode: Ref<boolean> = ref(false)
+    const message = useMessage()
+    const toast = ref({
+      show: true,
+      isCollapsed: false,
+      defaultTitle: '我是Toast',
+      title: 'Demo Card',
+      defaultMessage: 'Below are the card numbers for testing.',
+      message: [
+        '4000020951595032',
+        '2221008123677736'
+      ],
+      animate: false,
+      icon: ''
+    } as { [key: string]: any })
+    const copyButton = ref({
+      copySuccess: false,
+      isCopied: ref(false),
+      tooltipContent: 'copy',
+      showTooltip: false
+    } as { [key: string]: any })
     
-    const transactionId = '1775342394028724224'
     const options: object = {
       container: 'pacypay_checkout',
-      onPaymentCompleted: (res: any) => {
-        const txnInfo = res.data
+      onPaymentCompleted: async (res: any) => {
         const respCode = res.respCode
         const respMsg = res.respMsg
-        console.log('Payment completed', txnInfo, respCode, respMsg)
+        if (respCode === '20000') {
+          setTimeout(() => {
+            router.push('/success')
+          }, 1000)
+        } else {
+          message.error(respMsg, {
+            closable: true,
+            duration: 5000
+          })
+          await pullUpSDK()
+        }
       },
       onError: async function() {
         //支付异常回调方法
+        await pullUpSDK()
       },
       onFinished: async function() {
         // 支付完成（不管成功或失败）回调方法
@@ -168,6 +202,55 @@ export default defineComponent({
       }
     }
     
+    const order = async () => {
+      const req: object = await placeOrder('20')
+      return request.post('/api/v1/sdkTxn/doTransaction', req).then((res: any) => {
+        const { data, respCode, respMsg } = res
+        if (respCode === '20000' && respMsg === 'Success') {
+          return data['transactionId']
+        } else {
+          console.log('Payment failed', respMsg)
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    }
+    
+    const createMessage = () => {
+      message.error('Failed to place an order. Please contact support for assistance.',
+        {
+          closable: true,
+          duration: 5000
+        })
+    }
+    
+    const pullUpSDK = async () => {
+      const txnId = await order()
+      if (!txnId) {
+        createMessage()
+        return
+      }
+      // Onerway 收银台
+      new Pacypay(txnId, options)
+    }
+    
+    const renderMessage: MessageRenderMessage = (props) => {
+      const { type } = props
+      return h(NAlert, {
+        closable: props.closable,
+        type: type === 'loading' ? 'default' : type,
+        title: '',
+        style: {
+          borderRadius: 'var(--n-border-radius)',
+          boxShadow: 'var(--n-box-shadow)',
+          maxWidth: 'calc(100vw - 32px)',
+          width: '480px'
+        }
+      }, {
+        default: () => props.content
+      })
+    }
+    
     onMounted(async () => {
       // 渲染 Google pay按钮
       const script = document.createElement('script')
@@ -179,10 +262,7 @@ export default defineComponent({
         onGooglePayLoaded()
       }
       
-      const txnId = await this.order()
-      console.log(txnId, 'txnId')
-      // Onerway 收银台
-      new Pacypay(transactionId, options)
+      await pullUpSDK()
     })
     
     watch(() => currency.currency, () => {
@@ -190,24 +270,21 @@ export default defineComponent({
       currentCountry.value = currency.getCountry()
     })
     
-    return { supportedPayments, key, showSpin, qrCode, selectedPayment, showQrCode }
+    return {
+      supportedPayments,
+      key,
+      showSpin,
+      qrCode,
+      selectedPayment,
+      showQrCode,
+      message,
+      toast,
+      copyButton,
+      renderMessage
+    }
   },
   
   methods: {
-    async order(): Promise<string>{
-      const req: object = await placeOrder('20')
-      return request.post('/v1/sdkTxn/doTransaction', req).then((res: any) => {
-        const { data, respCode, respMsg } = res
-        if (respCode === '20000' && respMsg === 'Success') {
-          console.log(data['transactionId'], 'txnId')
-          return data['transactionId']
-        } else {
-          console.log('Payment failed', respMsg)
-        }
-      }).catch((err) => {
-        console.log(err)
-      })
-    },
     alipayHandler() {
       return alipay_plus('20')
     },
@@ -395,6 +472,10 @@ export default defineComponent({
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
     
+    /**
+     * 本地支付
+     * @param payment 本地支付方式
+     */
     async doPayment(payment: string) {
       this.showSpin = true
       this.selectedPayment = payment
@@ -425,6 +506,30 @@ export default defineComponent({
       }).catch((err) => {
         console.log(err)
       })
+    },
+    
+    /**
+     * 复制卡号到剪切板
+     * @param cardValue 卡号
+     */
+    copyContent(cardValue: string) {
+      console.log(cardValue, 'card')
+      navigator.clipboard.writeText(cardValue)
+        .then(() => {
+          this.message.success('Card number copied to clipboard', {
+            render: this.renderMessage,
+            closable: true,
+            duration: 3000,
+            keepAliveOnHover: true
+          })
+          setTimeout(() => {
+            this.copyButton.isCopied = false
+            this.toast.isCollapsed = true
+          }, 250)
+        }, err => {
+          console.error('Could not copy text: ', err)
+        })
+      
     }
   }
   
@@ -472,6 +577,20 @@ export default defineComponent({
         </n-collapse-item>
       </n-collapse>
     </n-card>
+    <common-toast :data="toast">
+      <template #message>
+        <p class="text-sm" v-html="toast.defaultMessage"></p>
+        <div v-if="toast.message" class="card-wrapper my-2.5">
+          <p v-for="(card,index) in toast.message" :key="index"
+             class="card-info flex items-center justify-between">
+            <span class="card-number font-semibold">
+              {{ card }}
+            </span>
+            <common-copy-button :data="copyButton" class="ml-1.5" @copied="copyContent(card)" />
+          </p>
+        </div>
+      </template>
+    </common-toast>
   </div>
 </template>
 
