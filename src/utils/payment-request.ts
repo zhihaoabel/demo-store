@@ -90,7 +90,7 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   return JSON.stringify(txnOrderMsg)
 }
 
-async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '') {
+async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType:string = 'LPMS') {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
@@ -100,7 +100,7 @@ async function createPaymentRequestBuilder(lpmsInfo: string, country: string, ph
     .setMerchantTxnTimeZone('+08:00')
     .setOrderAmount(amount)
     .setOrderCurrency(currency)
-    .setProductType('LPMS')
+    .setProductType(productType)
     .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
     .setSign('')
     .setSubProductType('DIRECT')
@@ -109,6 +109,14 @@ async function createPaymentRequestBuilder(lpmsInfo: string, country: string, ph
 
   request['sign'] = await generateSign(request, [])
   return request
+}
+
+/**
+ * 下单接口
+ * @param amount 金额
+ */
+export function placeOrder(amount: string) {
+  return createPaymentRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
 }
 
 /**
@@ -297,4 +305,8 @@ export function przelewy24(amount: string) {
 
 export function blikSeamless(amount: string) {
   return createPaymentRequestBuilder('BLIK_SEAMLESS', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '777123')
+}
+
+export function payNow(amount: string) {
+  return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122')
 }
