@@ -7,12 +7,12 @@ import App from './App.vue'
 import router from './router'
 import 'vfonts/Lato.css'
 import 'vfonts/FiraCode.css'
-import request from '@/utils/request'
+import api from '@/utils/api'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
-app.use(request)
+app.use(api)
 
 app.mount('#app')
