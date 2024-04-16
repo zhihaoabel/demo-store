@@ -1,11 +1,13 @@
 import axios from 'axios'
 
 const api = axios.create({
-  timeout: 10000
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  }
 })
 
 api.interceptors.request.use((config) => {
-  config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
   return config
 }, (error) => {
