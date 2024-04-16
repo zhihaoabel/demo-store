@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const api = axios.create({
   timeout: 10000,
-  // baseURL: 'https://sandbox-v3-acquiring.pacypay.com/',
+  baseURL: 'http://localhost:5173/',
   headers: {
     'Content-Type': 'application/json'
   }
