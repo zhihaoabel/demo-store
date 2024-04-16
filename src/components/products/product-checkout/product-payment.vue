@@ -204,7 +204,7 @@ export default defineComponent({
     
     const order = async () => {
       const req: object = await placeOrder('20')
-      return request.post('/v1/sdkTxn/doTransaction', req).then((res: any) => {
+      return request.post('/api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
           return data['transactionId']
@@ -486,7 +486,7 @@ export default defineComponent({
       const data = await handler()
       
       // 发起支付请求
-      request.post('/v1/txn/doTransaction', data).then((res: any) => {
+      request.post('/api/v1/txn/doTransaction', data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
         console.log(this.showQrCode, 'showQrCode')
