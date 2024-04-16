@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const request = axios.create({
-  // baseURL: import.meta.env.VITE_APP_API_BASE_URL,
+  baseURL: 'https://sandbox-v3-acquiring.pacypay.com/',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
