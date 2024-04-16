@@ -6,7 +6,7 @@ const request = axios.create({
 })
 
 request.interceptors.request.use((config) => {
-  config.headers['Content-Type'] = 'application/json'
+  config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
   return config
 }, (error) => {
