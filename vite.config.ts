@@ -135,11 +135,11 @@ export default defineConfig({
       '/api': {
         target: 'https://sandbox-v3-acquiring.pacypay.com',
         rewrite(path) {
-          return path.replace(/^\/api/, '')
+          return path.replace(/^\/api/, "")
         },
         changeOrigin: true,
       }
-    }
+    },
   },
   resolve: {
     alias: {
