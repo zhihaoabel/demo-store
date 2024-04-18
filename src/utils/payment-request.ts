@@ -1,5 +1,5 @@
 import { useCurrencyStore } from '@/stores/currency'
-import { fakerEN_US } from '@faker-js/faker'
+import { fakerEN_US, fakerZH_CN,  fakerEN_CA} from '@faker-js/faker'
 import PaymentRequestBuilder from '@/entities/PaymentRequestBuilder'
 import { generateSign } from '@/utils/sign'
 
@@ -16,6 +16,13 @@ const currency = useCurrencyStore()
 export function buildBillingInformation(country: string = currency.getCountry(), phone: string = '177' + fakerEN_US.string.numeric(8), identityNumber: string = '12345678') {
   const billingInformation = {} as { [key: string]: string }
   billingInformation['country'] = country
+  if (country === 'US') {
+    billingInformation['province'] = fakerEN_US.location.state()
+  } else if (country === 'CA') {
+    billingInformation['province'] = fakerEN_CA.location.state()
+  } else if (country === 'CN') {
+    billingInformation['province'] = fakerZH_CN.location.state()
+  }
   billingInformation['email'] = fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' })
   billingInformation['firstName'] = fakerEN_US.person.firstName()
   billingInformation['lastName'] = fakerEN_US.person.lastName()
@@ -54,6 +61,8 @@ export function buildMerchantTxnTime() {
 export function buildShippingInformation(country: string = currency.getCountry(), phone: string = '177' + fakerEN_US.string.numeric(8), identityNumber: string = '12345678') {
   const shippingInformation = {} as { [key: string]: string }
   shippingInformation['country'] = country
+  // 如果国家是US， 则 province 用
+  shippingInformation['province'] =
   shippingInformation['email'] = fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' })
   shippingInformation['firstName'] = fakerEN_US.person.firstName()
   shippingInformation['lastName'] = fakerEN_US.person.lastName()

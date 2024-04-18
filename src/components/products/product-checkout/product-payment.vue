@@ -58,11 +58,12 @@ import { NAlert, useMessage } from 'naive-ui'
 import router from '@/router'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
+import CardPayment from '@/components/payments/CardPayment.vue'
 
 
 export default defineComponent({
   name: 'ProductPayment',
-  components: { CommonCopyButton, CommonToast, IconRedirect },
+  components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
   
   setup() {
     const currency = useCurrencyStore()
@@ -204,7 +205,7 @@ export default defineComponent({
     
     const order = async () => {
       const req: object = await placeOrder('20')
-      return api.post('/api/v1/sdkTxn/doTransaction', req).then((res: any) => {
+      return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
           return data['transactionId']
@@ -486,7 +487,7 @@ export default defineComponent({
       const data = await handler()
       
       // 发起支付请求
-      api.post('/api/v1/txn/doTransaction', data).then((res: any) => {
+      api.post('api/v1/txn/doTransaction', data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
         console.log(this.showQrCode, 'showQrCode')
@@ -556,9 +557,8 @@ export default defineComponent({
           </n-divider>
         </div>
       </template>
-      <div class="onerway-payments-container flex-col items-center">
-        <div id='pacypay_checkout'></div>
-      </div>
+      <!--      两方支付-->
+      <card-payment />
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
                          :title="payment">

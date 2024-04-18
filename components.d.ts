@@ -7,7 +7,9 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    CardPayment: typeof import('./src/components/payments/CardPayment.vue')['default']
     CommonCopyButton: typeof import('./src/components/common/common-copy-button.vue')['default']
+    CommonImage: typeof import('./src/components/common/common-image.vue')['default']
     CommonToast: typeof import('./src/components/common/common-toast.vue')['default']
     HelloWorld: typeof import('./src/components/examples/HelloWorld.vue')['default']
     IconArrowHook: typeof import('./src/components/icons/IconArrowHook.vue')['default']
@@ -43,6 +45,8 @@ declare module 'vue' {
     NPopselect: typeof import('naive-ui')['NPopselect']
     NQrCode: typeof import('naive-ui')['NQrCode']
     NSpin: typeof import('naive-ui')['NSpin']
+    NTabPane: typeof import('naive-ui')['NTabPane']
+    NTabs: typeof import('naive-ui')['NTabs']
     NTooltip: typeof import('naive-ui')['NTooltip']
     PageFooter: typeof import('./src/components/layout/footer/page-footer.vue')['default']
     PageHeader: typeof import('./src/components/layout/header/page-header.vue')['default']
