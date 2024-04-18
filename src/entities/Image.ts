@@ -1,6 +1,3 @@
-import { uniqueId } from '@/utils/util'
-
-
 export class Image {
   id: string
   src: string
@@ -9,7 +6,7 @@ export class Image {
   width: string
 
   constructor(id: string, src: string, alt: string, height: string, width: string) {
-    this.id = uniqueId()
+    this.id = id
     this.src = src
     this.alt = alt
     this.height = height

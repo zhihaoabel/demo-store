@@ -1,12 +1,11 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import IconCopy from '@/components/icons/IconCopy.vue'
-import IconPaste from '@/components/icons/IconPaste.vue'
 
 
 export default defineComponent({
   name: 'CommonCopyButton',
-  components: { IconPaste, IconCopy },
+  components: {  IconCopy },
   props: {
     data: {
       type: Object,

@@ -262,8 +262,6 @@ export default defineComponent({
       script.onload = () => {
         onGooglePayLoaded()
       }
-      
-      await pullUpSDK()
     })
     
     watch(() => currency.currency, () => {
@@ -481,7 +479,6 @@ export default defineComponent({
       this.showSpin = true
       this.selectedPayment = payment
       this.showQrCode = (payment === 'PayNow') as boolean
-      console.log(this.showQrCode, 'showQrCode')
       
       const handler = this.getPaymentHandler(payment)
       const data = await handler()
@@ -490,7 +487,6 @@ export default defineComponent({
       api.post('api/v1/txn/doTransaction', data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
-        console.log(this.showQrCode, 'showQrCode')
         
         if (respCode === '20000' && respMsg === 'Success') {
           // 根据redirectUrl跳转
@@ -514,7 +510,6 @@ export default defineComponent({
      * @param cardValue 卡号
      */
     copyContent(cardValue: string) {
-      console.log(cardValue, 'card')
       navigator.clipboard.writeText(cardValue)
         .then(() => {
           this.message.success('Card number copied to clipboard', {
@@ -530,7 +525,6 @@ export default defineComponent({
         }, err => {
           console.error('Could not copy text: ', err)
         })
-      
     }
   }
   
@@ -559,6 +553,7 @@ export default defineComponent({
       </template>
       <!--      两方支付-->
       <card-payment />
+      <!--      本地支付-->
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
                          :title="payment">

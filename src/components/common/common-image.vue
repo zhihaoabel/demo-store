@@ -27,7 +27,7 @@ export default defineComponent({
                :key="image.id"
                :alt="image.alt"
                :height="image.height"
-               :src="require('@/assets/images/your-image.png')"
+               :src="image.src"
                :width="image.width" />
     </n-space>
   </n-image-group>
