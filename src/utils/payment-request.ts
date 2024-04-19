@@ -1,5 +1,5 @@
 import { useCurrencyStore } from '@/stores/currency'
-import { fakerEN_US, fakerZH_CN,  fakerEN_CA} from '@faker-js/faker'
+import { fakerEN_CA, fakerEN_US, fakerZH_CN } from '@faker-js/faker'
 import PaymentRequestBuilder from '@/entities/PaymentRequestBuilder'
 import { generateSign } from '@/utils/sign'
 
@@ -35,7 +35,19 @@ export function buildBillingInformation(country: string = currency.getCountry(),
   return JSON.stringify(billingInformation)
 }
 
-export function buildLpmsInfo(lpmsType: string, iban: string = '',  walletAccountId: string = '') {
+export function buildCardInfo(cardNumber: string, cvv: string, month: string, year: string, cardHolder: string) {
+  const cardInfo = {} as { [key: string]: string | number }
+  cardInfo['cardNumber'] = cardNumber
+  cardInfo['cvv'] = cvv
+  cardInfo['month'] = month
+  cardInfo['year'] = year
+  cardInfo['holderName'] = cardHolder
+
+  return JSON.stringify(cardInfo)
+
+}
+
+export function buildLpmsInfo(lpmsType: string, iban: string = '', walletAccountId: string = '') {
   const lpmsInfo: { [key: string]: string } = {}
   lpmsInfo['lpmsType'] = lpmsType
   lpmsInfo['iban'] = iban
@@ -63,7 +75,7 @@ export function buildShippingInformation(country: string = currency.getCountry()
   shippingInformation['country'] = country
   // 如果国家是US， 则 province 用
   shippingInformation['province'] =
-  shippingInformation['email'] = fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' })
+    shippingInformation['email'] = fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' })
   shippingInformation['firstName'] = fakerEN_US.person.firstName()
   shippingInformation['lastName'] = fakerEN_US.person.lastName()
   shippingInformation['phone'] = phone
@@ -99,7 +111,7 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   return JSON.stringify(txnOrderMsg)
 }
 
-async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType:string = 'LPMS') {
+async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
@@ -115,6 +127,29 @@ async function createPaymentRequestBuilder(lpmsInfo: string, country: string, ph
     .setSubProductType('DIRECT')
     .setTxnType('SALE')
     .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
+async function createDirectPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', cardInfo: any) {
+  const { cardNumber, cvv, month, year, cardHolder } = cardInfo
+  const request = new PaymentRequestBuilder()
+    .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
+    .setCardInfo(buildCardInfo(cardNumber, cvv, month, year, cardHolder))
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantTxnId(buildMerchantTxnId())
+    .setMerchantTxnTime(buildMerchantTxnTime())
+    .setMerchantTxnTimeZone('+08:00')
+    .setOrderAmount(amount)
+    .setOrderCurrency(currency)
+    .setProductType(productType)
+    .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
+    .setSign('')
+    .setSubProductType('DIRECT')
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency))
+    .setTxnType('SALE')
+    .build()
 
   request['sign'] = await generateSign(request, [])
   return request
@@ -318,4 +353,23 @@ export function blikSeamless(amount: string) {
 
 export function payNow(amount: string) {
   return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122')
+}
+
+export async function bindToken(cardNumber: string, cvv: string, month: string, year: string, cardHolder: string, ip: any) {
+  const cardInfo = buildCardInfo(cardNumber, cvv, month, year, cardHolder)
+  const request = new PaymentRequestBuilder()
+    .setAppId(APP_ID)
+    .setCardInfo(cardInfo)
+    .setCountry(currency.getCountry())
+    .setEmail(fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' }))
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantCustId('CustId_' + ip)
+    .setTransactionIp(ip).build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
+export async function directCard(amount: string, cardInfo: any) {
+  return createDirectPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', cardInfo)
 }

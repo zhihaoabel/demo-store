@@ -58,7 +58,7 @@ import { NAlert, useMessage } from 'naive-ui'
 import router from '@/router'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
-import CardPayment from '@/components/payments/CardPayment.vue'
+import CardPayment from '@/components/payments/card-payment.vue'
 
 
 export default defineComponent({
@@ -102,7 +102,7 @@ export default defineComponent({
         const respMsg = res.respMsg
         if (respCode === '20000') {
           setTimeout(() => {
-            router.push('/success')
+            router.push({ name: 'success', query: { status: '0' } })
           }, 1000)
         } else {
           message.error(respMsg, {

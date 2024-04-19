@@ -5,13 +5,38 @@ class PaymentRequestBuilder {
     this.requestParams = {}
   }
 
+  setAppId(appId: string) {
+    this.requestParams.appId = appId
+    return this
+  }
+
+  setCardInfo(cardInfo: any) {
+    this.requestParams.cardInfo = cardInfo
+    return this
+  }
+
   setBillingInformation(billingInformation: any) {
     this.requestParams.billingInformation = billingInformation
     return this
   }
 
+  setCountry(country: string) {
+    this.requestParams.country = country
+    return this
+  }
+
+  setEmail(email: string) {
+    this.requestParams.email = email
+    return this
+  }
+
   setLpmsInfo(lpmsInfo: any) {
     this.requestParams.lpmsInfo = lpmsInfo
+    return this
+  }
+
+  setMerchantCustId(merchantCustId: string) {
+    this.requestParams.merchantCustId = merchantCustId
     return this
   }
 
@@ -62,6 +87,11 @@ class PaymentRequestBuilder {
 
   setSubProductType(subProductType: string) {
     this.requestParams.subProductType = subProductType
+    return this
+  }
+
+  setTransactionIp(transactionIp: string) {
+    this.requestParams.transactionIp = transactionIp
     return this
   }
 

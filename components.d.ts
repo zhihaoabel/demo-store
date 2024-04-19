@@ -7,7 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    CardPayment: typeof import('./src/components/payments/CardPayment.vue')['default']
+    CardPayment: typeof import('./src/components/payments/card-payment.vue')['default']
     CommonCopyButton: typeof import('./src/components/common/common-copy-button.vue')['default']
     CommonImage: typeof import('./src/components/common/common-image.vue')['default']
     CommonToast: typeof import('./src/components/common/common-toast.vue')['default']
@@ -34,8 +34,10 @@ declare module 'vue' {
     NBadge: typeof import('naive-ui')['NBadge']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
+    NCheckbox: typeof import('naive-ui')['NCheckbox']
     NCollapse: typeof import('naive-ui')['NCollapse']
     NCollapseItem: typeof import('naive-ui')['NCollapseItem']
+    NDialogProvider: typeof import('naive-ui')['NDialogProvider']
     NDivider: typeof import('naive-ui')['NDivider']
     NFloatButton: typeof import('naive-ui')['NFloatButton']
     NIcon: typeof import('naive-ui')['NIcon']

@@ -1,18 +1,43 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRoute } from 'vue-router'
 import router from '@/router'
 
 export default defineComponent({
   name: 'SuccessView',
-  methods: {
-    router() {
-      return router
-    }
-  },
+  methods: {},
   components: {},
+  
   setup() {
+    // 从 url 获取响应参数
+    const route = useRoute()
+    const status = route.query.status
+    let buttonTxt = ''
     
-    return {}
+    let msg = ''
+    if (status === '0') {
+      buttonTxt = 'Back Home'
+      msg = 'You have successfully placed your order'
+    } else if (status === '1') {
+      // 成功绑卡
+      buttonTxt = 'Back'
+      msg = 'You have successfully bound your card'
+    } else {
+      buttonTxt = 'Back Home'
+      msg = 'Sorry, your order failed'
+    }
+    
+    function handleClick() {
+      if (status === '0') {
+        router.push('/')
+      } else if (status === '1') {
+        router.go(-1)
+      } else {
+        router.push('/')
+      }
+    }
+    
+    return { msg, buttonTxt, handleClick }
   }
 })
 </script>
@@ -31,14 +56,15 @@ export default defineComponent({
         </div>
       </div>
       <h3 class="my-4 text-center text-3xl font-semibold text-gray-700">Congratuation!!!</h3>
-      <p class="w-[230px] text-center font-normal text-gray-600">You have successfully placed your order</p>
-      <router-link to="/">
-        <button
-          class="mx-auto mt-6 block rounded-xl border-4 border-transparent bg-orange-400 px-6 py-3 text-center text-base font-medium text-orange-100 outline-8 hover:outline hover:duration-300"
-        >
-          Back Home
-        </button>
-      </router-link>
+      <p class="w-[230px] text-center font-normal text-gray-600">
+        {{ msg }}
+      </p>
+      <button
+        class="mx-auto mt-6 block rounded-xl border-4 border-transparent bg-orange-400 px-6 py-3 text-center text-base font-medium text-orange-100 outline-8 hover:outline hover:duration-300"
+        @click="handleClick"
+      >
+        {{ buttonTxt }}
+      </button>
     </div>
   </div>
 </template>
