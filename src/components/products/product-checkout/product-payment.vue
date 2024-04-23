@@ -94,6 +94,7 @@ export default defineComponent({
       tooltipContent: 'copy',
       showTooltip: false
     } as { [key: string]: any })
+    const showGooglePayBtn = ref(false)
     
     const options: object = {
       container: 'pacypay_checkout',
@@ -252,7 +253,7 @@ export default defineComponent({
       })
     }
     
-    onMounted(async () => {
+    onMounted(() => {
       // 渲染 Google pay按钮
       const script = document.createElement('script')
       script.src = 'https://pay.google.com/gp/p/js/pay.js'
@@ -279,7 +280,8 @@ export default defineComponent({
       message,
       toast,
       copyButton,
-      renderMessage
+      renderMessage,
+      showGooglePayBtn
     }
   },
   
@@ -546,7 +548,7 @@ export default defineComponent({
         <div class="google-pay-button-container flex-col w-full mt-4">
           <div id="google-container" class="google-apple-pay-container ">
           </div>
-          <n-divider>
+          <n-divider >
             Or pay with
           </n-divider>
         </div>

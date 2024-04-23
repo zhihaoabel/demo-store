@@ -13,3 +13,9 @@ export async function getClientIp() {
     console.log('Error fetching IP: ', err)
   }
 }
+
+// 生成custId
+export async function generateCustId() {
+  const ip = await getClientIp()
+  return 'custId_' + ip
+}

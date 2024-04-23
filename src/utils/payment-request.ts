@@ -2,6 +2,7 @@ import { useCurrencyStore } from '@/stores/currency'
 import { fakerEN_CA, fakerEN_US, fakerZH_CN } from '@faker-js/faker'
 import PaymentRequestBuilder from '@/entities/PaymentRequestBuilder'
 import { generateSign } from '@/utils/sign'
+import { generateCustId } from '@/utils/util'
 
 const APP_ID = '1727880846378401792'
 const MERCHANT_NO = '800209'
@@ -363,7 +364,7 @@ export async function bindToken(cardNumber: string, cvv: string, month: string, 
     .setCountry(currency.getCountry())
     .setEmail(fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' }))
     .setMerchantNo(MERCHANT_NO)
-    .setMerchantCustId('CustId_' + ip)
+    .setMerchantCustId(await generateCustId())
     .setTransactionIp(ip).build()
 
   request['sign'] = await generateSign(request, [])
@@ -372,4 +373,16 @@ export async function bindToken(cardNumber: string, cvv: string, month: string, 
 
 export async function directCard(amount: string, cardInfo: any) {
   return createDirectPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', cardInfo)
+}
+
+export async function queryToken() {
+  const request = new PaymentRequestBuilder()
+    .setAppId(APP_ID)
+    .setMerchantNo(MERCHANT_NO)
+    // .setMerchantCustId('custId_1640247522007')
+    .setMerchantCustId(await generateCustId())
+    .setSign('').build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import CommonImage from '@/components/common/common-image.vue'
 import type { Image } from '@/entities/Image'
 import { getClientIp, uniqueId } from '@/utils/util'
@@ -9,10 +9,11 @@ import mastercard from '@/assets/cards/mastercard.svg'
 import amex from '@/assets/cards/american-express.svg'
 import discover from '@/assets/cards/discover.svg'
 import diner from '@/assets/cards/diners.png'
-import { bindToken, directCard } from '@/utils/payment-request'
+import { bindToken, directCard, queryToken } from '@/utils/payment-request'
 import api from '@/utils/api'
 import { useDialog, useMessage } from 'naive-ui'
 import router from '@/router'
+import type { TokenInfo } from '@/entities/TokenInfo'
 
 
 export default defineComponent({
@@ -120,6 +121,35 @@ export default defineComponent({
     const dialog = useDialog()
     const message = useMessage()
     
+    const hasCards = ref(false)
+    let tokens = ref<TokenInfo[]>([])
+    const selectedCard = ref('')
+    
+    // 调用查询绑卡接口
+    async function queryCardList() {
+      const request = await queryToken()
+      
+      return api.post('/api/v1/txn/queryTokenList', request).then((res: any) => {
+        const { respCode, respMsg, data } = res
+        if (respCode === '20000' && respMsg === 'Success') {
+          return data['tokenInfos']
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    }
+    
+    onMounted(async () => {
+      // 根据ip查询当前用户是否绑卡，没有绑卡则显示信用卡表单，否则显示绑卡的列表
+      const res = await queryCardList()
+      
+      if (res.length > 0) {
+        hasCards.value = true
+        tokens.value = res
+      }
+      console.log(tokens, 'tokens')
+    })
+    
     return {
       cards,
       labels,
@@ -134,7 +164,15 @@ export default defineComponent({
       checkBindCard,
       checkInstallment,
       dialog,
-      message
+      message,
+      tokens,
+      hasCards,
+      visa,
+      mastercard,
+      amex,
+      diner,
+      discover,
+      selectedCard
     }
   },
   
@@ -269,7 +307,7 @@ export default defineComponent({
       }
       
       // todo: 根据是否绑卡，分期，还是直接信用卡支付构建请求参数
-      if (this.checkBindCard) {
+      if (this.checkBindCard) { // 绑卡
         const request = await this.buildBindCard(cardInfo)
         
         // 调用绑卡接口 /v1/txn/bindCard
@@ -284,9 +322,9 @@ export default defineComponent({
           this.showSpin = false
         })
         
-      } else if (this.checkInstallment) {
+      } else if (this.checkInstallment) { // 分期
         this.buildInstallment()
-      } else {
+      } else { // 信用卡支付
         const request = await this.buildDirectPayment(cardInfo)
         
         // 调用信用卡支付接口 /v1/txn/doTransaction
@@ -311,12 +349,10 @@ export default defineComponent({
       this.checkInstallment = checked
     },
     
-    // todo: 构建信用卡支付请求参数
     async buildDirectPayment(cardInfo: any) {
       return await directCard('20', cardInfo)
     },
     
-    // todo: 构建绑卡请求参数
     async buildBindCard(cardInfo: any) {
       const ip = await getClientIp()
       const { month, year } = cardInfo
@@ -332,8 +368,9 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="p-4 rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-7xl">
-    <div class="bg-white p-8 border border-gray-300 rounded-2xl">
+  <div class="py-4 rounded-lg  bg-card text-card-foreground shadow-sm w-full max-w-7xl">
+    <!--    信用卡支付表单-->
+    <div v-if="!hasCards" class="credit-card-form bg-white p-8 border border-gray-300 rounded-2xl">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div class="flex items-center text-2xl">
@@ -431,6 +468,41 @@ export default defineComponent({
           </button>
         </div>
       </form>
+    </div>
+    <!--    卡列表-->
+    <div v-else class="card-list mb-4 border-gray-200 border p-4 rounded-lg hover:border-gray-300">
+      <n-radio
+        v-for="card in tokens"
+        :key="card.id"
+        class="translate-y-1"
+        name="basic-demo" value="Definitely Maybe"
+      >
+        <div class="card-info flex items-center justify-between -translate-y-1.5">
+          <n-icon class="card-icon mr-2 text-4xl">
+            <!-- todo: 更换src, alt-->
+            <img :src="visa" alt="Visa" class="translate-y-1.5">
+          </n-icon>
+          <span
+            class="expire text-sm text-gray-500 border rounded-lg bg-slate-200 font-semibold sm:block hidden">{{ card.month
+            }}/{{ card.year
+            }}</span>
+          <span
+            class="expire text-sm text-gray-500 border rounded-lg bg-slate-200 font-semibold sm:hidden">{{ card.month
+            }}/{{ card.year.slice(-2)
+            }}</span>
+          <!-- Full card number for large screens -->
+          <span class="card-number text-sm px-2 ml-32 font-semibold sm:block hidden">
+            {{ card.cardNumber }}
+          </span>
+          <!-- Last 4 digits for small screens -->
+          <span class="card-number-short text-sm px-1 ml-8 font-semibold sm:hidden">
+            {{ card.cardNumber.slice(-4) }}
+          </span>
+        </div>
+      </n-radio>
+      <button class="w-full mt-3 p-2 border rounded-lg text-lg font-medium text-white bg-slate-900" @click="hasCards = !hasCards">
+        Add Card
+      </button>
     </div>
   </div>
 </template>
