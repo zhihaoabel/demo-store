@@ -15,7 +15,7 @@ export default defineComponent({
       {
         id: 1,
         name: 'Apple1',
-        price: 1.5,
+        price: 50,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -25,7 +25,7 @@ export default defineComponent({
       {
         id: 2,
         name: 'Apple2',
-        price: 1.5,
+        price: 60,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -35,7 +35,7 @@ export default defineComponent({
       {
         id: 3,
         name: 'Apple3',
-        price: 1.5,
+        price: 70,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -45,7 +45,7 @@ export default defineComponent({
       {
         id: 4,
         name: 'Apple4',
-        price: 1.5,
+        price: 80,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -55,7 +55,7 @@ export default defineComponent({
       {
         id: 5,
         name: 'Apple5',
-        price: 1.5,
+        price: 150,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -65,7 +65,7 @@ export default defineComponent({
       {
         id: 6,
         name: 'Apple6',
-        price: 1.5,
+        price: 300,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -75,7 +75,7 @@ export default defineComponent({
       {
         id: 7,
         name: 'Apple7',
-        price: 1.5,
+        price: 500,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -85,7 +85,7 @@ export default defineComponent({
       {
         id: 8,
         name: 'Apple8',
-        price: 1.5,
+        price: 999,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -95,7 +95,7 @@ export default defineComponent({
       {
         id: 9,
         name: 'Apple9',
-        price: 1.5,
+        price: 2500,
         currency: currencySign.value,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',

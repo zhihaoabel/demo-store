@@ -10,13 +10,13 @@ class PaymentRequestBuilder {
     return this
   }
 
-  setCardInfo(cardInfo: any) {
-    this.requestParams.cardInfo = cardInfo
+  setBillingInformation(billingInformation: any) {
+    this.requestParams.billingInformation = billingInformation
     return this
   }
 
-  setBillingInformation(billingInformation: any) {
-    this.requestParams.billingInformation = billingInformation
+  setCardInfo(cardInfo: any) {
+    this.requestParams.cardInfo = cardInfo
     return this
   }
 
@@ -87,6 +87,11 @@ class PaymentRequestBuilder {
 
   setSubProductType(subProductType: string) {
     this.requestParams.subProductType = subProductType
+    return this
+  }
+
+  setTokenInfo(tokenInfo: string) {
+    this.requestParams.tokenInfo = tokenInfo
     return this
   }
 

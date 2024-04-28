@@ -14,8 +14,8 @@ export default defineComponent({
     const recommendations = ref<Product[]>([
       {
         id: 1,
-        name: 'Apple1',
-        price: 1.5,
+        name: 'Apple11',
+        price: 300,
         currency: currency.sign,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -24,8 +24,8 @@ export default defineComponent({
       },
       {
         id: 2,
-        name: 'Apple2',
-        price: 1.5,
+        name: 'Apple12',
+        price: 500,
         currency: currency.sign,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',
@@ -34,8 +34,8 @@ export default defineComponent({
       },
       {
         id: 3,
-        name: 'Apple3',
-        price: 1.5,
+        name: 'Apple13',
+        price: 700,
         currency: currency.sign,
         image: 'https://demo-pacheckoutdemo.airwallex.com/assets/img/book1.png',
         description: 'An apple is an edible fruit produced by an apple tree.',

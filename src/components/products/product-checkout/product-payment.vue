@@ -59,13 +59,14 @@ import router from '@/router'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
 import CardPayment from '@/components/payments/card-payment.vue'
+import type { Product } from '@/entities/Product'
 
 
 export default defineComponent({
   name: 'ProductPayment',
   components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
   
-  setup() {
+  setup(props) {
     const currency = useCurrencyStore()
     const key = ref(0)
     const supportedPayments = ref(currency.getSupportedPayments())
@@ -95,6 +96,7 @@ export default defineComponent({
       showTooltip: false
     } as { [key: string]: any })
     const showGooglePayBtn = ref(false)
+    const product = ref<Product> (props.data)
     
     const options: object = {
       container: 'pacypay_checkout',
@@ -205,7 +207,7 @@ export default defineComponent({
     }
     
     const order = async () => {
-      const req: object = await placeOrder('20')
+      const req: object = await placeOrder(product.value.price.toString())
       return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -281,145 +283,153 @@ export default defineComponent({
       toast,
       copyButton,
       renderMessage,
-      showGooglePayBtn
+      showGooglePayBtn,
+      product
+    }
+  },
+  
+  props: {
+    data: {
+      type: Object as () => Product,
+      required: true
     }
   },
   
   methods: {
     alipayHandler() {
-      return alipay_plus('20')
+      return alipay_plus(this.product.price.toString())
     },
     kakaoHandler() {
-      return kakao_pay('20')
+      return kakao_pay(this.product.price.toString())
     },
     boletoHandler() {
-      return boleto('20')
+      return boleto(this.product.price.toString())
     },
     bankTransferHandler() {
-      return bankTransfer('20')
+      return bankTransfer(this.product.price.toString())
     },
     mercadoPagoHandler() {
-      return mercadoPago('20')
+      return mercadoPago(this.product.price.toString())
     },
     pixHandler() {
-      return pix('20')
+      return pix(this.product.price.toString())
     },
     servipagHandler() {
-      return servipag('20')
+      return servipag(this.product.price.toString())
     },
     sencillitoHandler() {
-      return sencillito('20')
+      return sencillito(this.product.price.toString())
     },
     webpayHandler() {
-      return webpay('50')
+      return webpay(this.product.price.toString())
     },
     multicajaHandler() {
-      return multicaja('350')
+      return multicaja(this.product.price.toString())
     },
     efectyHandler() {
-      return efecty('10000')
+      return efecty(this.product.price.toString())
     },
     speiHandler() {
-      return spei('20')
+      return spei(this.product.price.toString())
     },
     oxxoHandler() {
-      return oxxo('20')
+      return oxxo(this.product.price.toString())
     },
     oxxopayHandler() {
-      return oxxopay('20')
+      return oxxopay(this.product.price.toString())
     },
     pagoEfectivoHandler() {
-      return pagoEfectivo('20')
+      return pagoEfectivo(this.product.price.toString())
     },
     safetypay_cashHandler() {
-      return safetypay_cash('20')
+      return safetypay_cash(this.product.price.toString())
     },
     safetypay_onlineHandler() {
-      return safetypay_online('20')
+      return safetypay_online(this.product.price.toString())
     },
     pagosnetHandler() {
-      return pagosnet('20')
+      return pagosnet(this.product.price.toString())
     },
     idealHandler() {
-      return ideal('20')
+      return ideal(this.product.price.toString())
     },
     skrillHandler() {
-      return skrill('20')
+      return skrill(this.product.price.toString())
     },
     poliHandler() {
-      return poli('20')
+      return poli(this.product.price.toString())
     },
     sofortHandler() {
-      return sofort('20')
+      return sofort(this.product.price.toString())
     },
     payUHandler() {
-      return payU('20')
+      return payU(this.product.price.toString())
     },
     trustlyHandler() {
-      return trustly('20')
+      return trustly(this.product.price.toString())
     },
     sepaddHandler() {
-      return sepadd('20')
+      return sepadd(this.product.price.toString())
     },
     giropayHandler() {
-      return giropay('20')
+      return giropay(this.product.price.toString())
     },
     bancontactHandler() {
-      return bancontact('20')
+      return bancontact(this.product.price.toString())
     },
     myBankHandler() {
-      return myBank('20')
+      return myBank(this.product.price.toString())
     },
     ovoHandler() {
-      return ovo('1000')
+      return ovo(this.product.price.toString())
     },
     maybankHandler() {
-      return maybank('1000')
+      return maybank(this.product.price.toString())
     },
     permataHandler() {
-      return permata('1000')
+      return permata(this.product.price.toString())
     },
     danaHandler() {
-      return dana('1000')
+      return dana(this.product.price.toString())
     },
     qrisHandler() {
-      return qris('1000')
+      return qris(this.product.price.toString())
     },
     shopeePayHandler() {
-      return shopeePay('1000')
+      return shopeePay(this.product.price.toString())
     },
     konbiniHandler() {
-      return konbini('20')
+      return konbini(this.product.price.toString())
     },
     payEasyHandler() {
-      return payEasy('20')
+      return payEasy(this.product.price.toString())
     },
     mcashHandler() {
-      return mcash('20')
+      return mcash(this.product.price.toString())
     },
     boostHandler() {
-      return boost('20')
+      return boost(this.product.price.toString())
     },
     gCashHandler() {
-      return gCash('20')
+      return gCash(this.product.price.toString())
     },
     grabPayHandler() {
-      return grabPay('20')
+      return grabPay(this.product.price.toString())
     },
     payMayaHandler() {
-      return payMaya('20')
+      return payMaya(this.product.price.toString())
     },
     elevenHandler() {
-      return eleven('20')
+      return eleven(this.product.price.toString())
     },
     przelewy24Handler() {
-      return przelewy24('20')
+      return przelewy24(this.product.price.toString())
     },
     blikSeamlessHandler() {
-      return blikSeamless('20')
+      return blikSeamless(this.product.price.toString())
     },
     payNowHandler() {
-      return payNow('20')
+      return payNow(this.product.price.toString())
     },
     
     getPaymentHandler(payment: string) {
@@ -538,7 +548,7 @@ export default defineComponent({
     <n-card :bordered="false"
             :hoverable="true"
             :segmented="{}"
-            class="px-8 py-2"
+            class="px-2 py-2"
             header-class="flex-col"
             header-extra-class="w-full"
             size="large"

@@ -2,6 +2,7 @@
 import { defineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
+import { OrderStatus } from '@/enums/OrderStatus'
 
 export default defineComponent({
   name: 'SuccessView',
@@ -15,10 +16,10 @@ export default defineComponent({
     let buttonTxt = ''
     
     let msg = ''
-    if (status === '0') {
+    if (status === OrderStatus.Success) {
       buttonTxt = 'Back Home'
       msg = 'You have successfully placed your order'
-    } else if (status === '1') {
+    } else if (status === OrderStatus.BindCard) {
       // 成功绑卡
       buttonTxt = 'Back'
       msg = 'You have successfully bound your card'

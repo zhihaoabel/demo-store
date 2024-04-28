@@ -88,6 +88,13 @@ export function buildShippingInformation(country: string = currency.getCountry()
   return JSON.stringify(shippingInformation)
 }
 
+export function buildTokenInfo(tokenId: string) {
+  const tokenInfo = {} as { [key: string]: string }
+  tokenInfo['tokenId'] = tokenId
+
+  return JSON.stringify(tokenInfo)
+}
+
 /**
  * 构建交易订单信息
  * @param productCurrency 商品货币，默认为当前货币
@@ -148,6 +155,28 @@ async function createDirectPaymentBuilder(country: string, phone: string, amount
     .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
     .setSign('')
     .setSubProductType('DIRECT')
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency))
+    .setTxnType('SALE')
+    .build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
+async function createTokenPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', tokenId: string) {
+  const request = new PaymentRequestBuilder()
+    .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantTxnId(buildMerchantTxnId())
+    .setMerchantTxnTime(buildMerchantTxnTime())
+    .setMerchantTxnTimeZone('+08:00')
+    .setOrderAmount(amount)
+    .setOrderCurrency(currency)
+    .setProductType(productType)
+    .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
+    .setSign('')
+    .setSubProductType('TOKEN')
+    .setTokenInfo(buildTokenInfo(tokenId))
     .setTxnOrderMsg(buildTxnOrderMsg(amount, currency))
     .setTxnType('SALE')
     .build()
@@ -386,3 +415,8 @@ export async function queryToken() {
   request['sign'] = await generateSign(request, [])
   return request
 }
+
+export async function payByTokenId(tokenId: string, amount: string) {
+  return createTokenPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', tokenId)
+}
+

@@ -7,7 +7,7 @@ export const useCartStore = defineStore('cart', {
     cart: {
       id: 0,
       products: [],
-      amount: 1
+      amount: 0
     } as Cart
   }),
 

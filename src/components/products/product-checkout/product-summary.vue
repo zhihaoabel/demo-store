@@ -2,36 +2,33 @@
 import { defineComponent, onBeforeMount, ref, type Ref, type UnwrapRef } from 'vue'
 import { useCurrencyStore } from '@/stores/currency'
 import type { Product } from '@/entities/Product'
-import { useRoute } from 'vue-router'
 
 export default defineComponent({
   name: 'ProductSummary',
   
-  setup() {
+  setup(props) {
     const currency = useCurrencyStore()
-    const route = useRoute()
-    let product: Ref<UnwrapRef<Product>> = ref<Product>({} as Product)
+    const product: Ref<UnwrapRef<Product>> = ref<Product>({} as Product)
     
     onBeforeMount(() => {
-      product.value = {
-        id: Number(route.query.id),
-        name: String(route.query.name),
-        price: Number(route.query.price),
-        currency: String(route.query.currency),
-        image: String(route.query.image),
-        description: String(route.query.description),
-        quantity: Number(route.query.stock),
-        link: String(route.query.link)
-      }
+      product.value = props.data
     })
+    
     return { currency, product }
+  },
+  
+  props: {
+    data: {
+      type: Object as () => Product,
+      required: true
+    }
   }
 })
 </script>
 
 
 <template>
-  <n-card :bordered="false" title="Summary" class="p-8">
+  <n-card :bordered="false" class="p-8" title="Summary">
     <!--    header，title旁边的内容 -->
     <template #header-extra>
     
@@ -41,7 +38,7 @@ export default defineComponent({
       <img :src="product.image" alt="product image" class="product-image max-w-20 mr-8" />
       <div class="product-info">
         <div class="product-price">{{ currency.sign }} {{ product.price }}</div>
-        <div class="product-description">{{ product.description }}</div>
+        <div class="product-description min-w-20">{{ product.description }}</div>
       </div>
     </div>
     

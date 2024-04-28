@@ -138,7 +138,14 @@ export default defineConfig({
           return path.replace(/^\/api/, "")
         },
         changeOrigin: true,
-      }
+      },
+      '/internal': {
+        target: 'https://sandbox-v3-checkout-sdk.pacypay.com',
+        rewrite(path) {
+          return path.replace(/^\/internal/, "")
+        },
+        changeOrigin: true,
+      },
     },
   },
   resolve: {

@@ -19,3 +19,8 @@ export async function generateCustId() {
   const ip = await getClientIp()
   return 'custId_' + ip
 }
+
+// 字符串首字母大写
+export function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
