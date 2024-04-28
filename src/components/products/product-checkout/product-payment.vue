@@ -564,7 +564,7 @@ export default defineComponent({
         </div>
       </template>
       <!--      两方支付-->
-      <card-payment />
+      <card-payment :data="product"/>
       <!--      本地支付-->
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"

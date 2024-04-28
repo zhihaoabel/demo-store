@@ -177,6 +177,11 @@ export default defineComponent({
           console.log(err)
         })
       }, 1000)
+      
+      // 如果tokens为空，那么显示收银台
+      if (tokens.value.length === 1) {
+        hasCards.value = false
+      }
     }
     
     onMounted(async () => {
@@ -576,7 +581,7 @@ export default defineComponent({
         </n-icon>
       </button>
     </div>
-    <!--    信用卡支付表单-->
+    <!--    收银台信用卡支付表单-->
     <div v-show="!hasCards" class="credit-card-form bg-white p-8 border border-gray-300 rounded-2xl">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6 ">
