@@ -1,6 +1,6 @@
 <template>
   <router-link :to="{name: 'product-detail', query: productQuery, params: {id: productQuery.id}}">
-    <n-card :title="product.name" class="flex-col justify-center hover:bg-slate-400 hover:text-white" hoverable
+    <n-card :title="product.name" class="flex-col justify-center hover:bg-slate-400 hover:text-white h-full rounded-xl" hoverable
             size="small">
       <template #cover>
         <img :alt="product.name" :src="product.image">

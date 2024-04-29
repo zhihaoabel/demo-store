@@ -44,17 +44,17 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="detail-description flex items-center justify-between mb-10">
-    <div class="detail-image max-w-md mr-4">
-      <img :src="product.image" alt="product-image" class="shadow-2xl shadow-slate-400">
+  <div class="detail-description flex items-center justify-around mb-10 max-sm:flex-col max-sm:px-2">
+    <div class="detail-image max-w-md sm:mr-4 max-sm:self-start">
+      <img :src="product.image" alt="product-image" class="rounded-lg shadow-2xl shadow-slate-400">
     </div>
-    <div class="detail-info flex flex-col justify-between items-start self-start ">
-      <h1 class="text-2xl font-bold mt-12">{{ product.name }}</h1>
+    <div class="detail-info flex flex-col justify-between items-start self-start max-sm:w-full ">
+      <h1 class="text-2xl font-bold sm:mt-8 max-sm:mt-6">{{ product.name }}</h1>
       <p class="text-lg mt-6">{{ product.description }}</p>
-      <div class="detail-price mt-8">
-        <span class="text-2xl">{{ currency.sign }} {{ product.price }}</span>
+      <div class="detail-price sm:mt-8 max-sm:mt-4">
+        <span class="text-xl font-semibold">{{ currency.sign }} {{ product.price }}</span>
       </div>
-      <div class="detail-action mt-6 w-full">
+      <div class="detail-action sm:mt-6 w-full max-sm:mt-3">
         <n-button
           class="flex items-center bg-slate-900 text-white px-4 py-2 rounded-md w-full "
           icon-placement="right"
@@ -65,7 +65,7 @@ export default defineComponent({
           </template>
         </n-button>
       </div>
-      <div class="comment-container mt-10 flex items-center">
+      <div class="comment-container mt-5 flex items-center max-md:w-full">
         <img alt="" class="icon" src="/comment.svg">
         <span class="actual-rating font-bold ml-6">
           4.0
