@@ -35,10 +35,9 @@ export default defineComponent({
     </template>
     
     <div class="card-content-container flex items-center justify-between">
-      <img :src="product.image" alt="product image" class="product-image max-w-20 mr-8" />
-      <div class="product-info">
-        <div class="product-price">{{ currency.sign }} {{ product.price }}</div>
-        <div class="product-description min-w-20">{{ product.description }}</div>
+      <img :src="product.image" alt="product image" class="product-image max-w-24 mr-8 rounded-xl" />
+      <div class="product-info self-start ">
+        <div class="product-description min-w-24 font-semibold">{{ product.description }}</div>
       </div>
     </div>
     
@@ -60,7 +59,7 @@ export default defineComponent({
     <template #action>
       <div class="total flex items-center justify-between border-t pt-4">
         <span class="font-bold">Total</span>
-        <span class="font-semibold">{{ currency.sign }} {{ product.price }}</span>
+        <span class="font-semibold text-lg text-red-600">{{ currency.sign }} {{ product.price }}</span>
       </div>
     </template>
   </n-card>
@@ -68,5 +67,4 @@ export default defineComponent({
 
 
 <style scoped>
-
 </style>

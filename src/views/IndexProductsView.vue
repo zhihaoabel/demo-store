@@ -17,15 +17,15 @@ export default defineComponent({
   name: 'IndexProductsView',
   components: { ProductCard },
   setup() {
-    const currencyStore = useCurrencyStore()
-    let currencySign = ref(currencyStore.sign)
+    const currency = useCurrencyStore()
+    let currencySign = ref(currency.sign)
     
     const products: Product[] = [
       {
         id: 1,
         name: 'Apple iPhone 13',
         price: 799,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 5,
         image: iphone13,
         description: 'Latest model with A15 Bionic chip.',
@@ -35,7 +35,7 @@ export default defineComponent({
         id: 2,
         name: 'Samsung Galaxy S21',
         price: 699,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 3,
         image: samsung,
         description: 'High-resolution cameras and a vibrant display.',
@@ -45,7 +45,7 @@ export default defineComponent({
         id: 3,
         name: 'Google Pixel 6',
         price: 599,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 10,
         image: pixel6,
         description: 'Smartest and fastest Pixel yet.',
@@ -55,7 +55,7 @@ export default defineComponent({
         id: 4,
         name: 'Apple MacBook Air',
         price: 999,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 4,
         image: macbook,
         description: 'With the new M1 chip, it’s our most powerful 13-inch MacBook Air.',
@@ -65,7 +65,7 @@ export default defineComponent({
         id: 5,
         name: 'Dell XPS 13',
         price: 1099,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 7,
         image: dell,
         description: 'Stunning inside and out. The most powerful 13-inch in its class.',
@@ -75,7 +75,7 @@ export default defineComponent({
         id: 6,
         name: 'Sony WH-1000XM4',
         price: 349,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 15,
         image: sony,
         description: 'Industry-leading noise canceling with Dual Noise Sensor technology.',
@@ -85,7 +85,7 @@ export default defineComponent({
         id: 7,
         name: 'Bose QuietComfort 35 II',
         price: 299,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 12,
         image: bose,
         description: 'Acoustic Noise Cancelling headphones.',
@@ -95,7 +95,7 @@ export default defineComponent({
         id: 8,
         name: 'Apple Watch Series 7',
         price: 399,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 20,
         image: watch,
         description: 'The future of health is on your wrist.',
@@ -105,7 +105,7 @@ export default defineComponent({
         id: 9,
         name: 'Fitbit Charge 5',
         price: 179,
-        currency: 'USD',
+        currency: currency.getCurrency(),
         quantity: 25,
         image: fitbit,
         description: 'Optimize your workout routine with a built-in GPS.',
@@ -114,13 +114,13 @@ export default defineComponent({
     ]
     
     return {
-      products, currencyStore, currencySign
+      products, currency, currencySign
     }
   },
   watch: {
-    'currencyStore.sign': {
+    'currency.sign': {
       handler() {
-        this.currencySign = this.currencyStore.sign
+        this.currencySign = this.currency.sign
       }
     }
   }
