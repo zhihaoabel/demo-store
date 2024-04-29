@@ -22,7 +22,7 @@ export default defineComponent({
     function clickHandler() {
       // 将 product 传给路由
       router.push({
-        path: '/checkout',
+        name: 'checkout',
         query: {
           id: props.product.id,
           name: props.product.name,
