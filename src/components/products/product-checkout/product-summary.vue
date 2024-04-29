@@ -42,26 +42,24 @@ export default defineComponent({
     </div>
     
     <!--    subtotal 和 shipping 内容-->
-    <template #footer>
-      <div class="price-container flex-col">
-        <div class="sub-total flex items-center justify-between">
-          <span>Subtotal</span>
-          <span>{{ currency.sign }} {{ product.price }}</span>
-        </div>
-        <div class="shipping flex items-center justify-between mt-6">
-          <span>Shipping</span>
-          <span>0</span>
-        </div>
+    <div class="price-container flex-col my-8">
+      <div class="sub-total flex items-center justify-between">
+        <span>Subtotal</span>
+        <span>{{ currency.sign }} {{ product.price }}</span>
       </div>
-    </template>
+      <div class="shipping flex items-center justify-between mt-6">
+        <span>Shipping</span>
+        <span>0</span>
+      </div>
+    </div>
+    
     
     <!--    total 的内容-->
-    <template #action>
-      <div class="total flex items-center justify-between border-t pt-4">
-        <span class="font-bold">Total</span>
-        <span class="font-semibold text-lg text-red-600">{{ currency.sign }} {{ product.price }}</span>
-      </div>
-    </template>
+    <div class="total flex items-center justify-between border-t pt-4">
+      <span class="font-bold">Total</span>
+      <span class="font-semibold text-lg text-red-600">{{ currency.sign }} {{ product.price }}</span>
+    </div>
+  
   </n-card>
 </template>
 

@@ -39,7 +39,7 @@ export default defineComponent({
 <template>
   <div
     class="checkout-container grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 justify-center p-2 max-w-6xl mx-auto">
-    <product-summary :data="product" class="max-w-96 mx-auto w-full border-r-2 border-slate-100 " />
+    <product-summary :data="product" class="max-w-96 mx-auto w-full sm:border-r-2 border-slate-100 " />
     <product-payment :data="product" class="col-span-2" />
   </div>
 </template>
