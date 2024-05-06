@@ -142,7 +142,7 @@ export default defineComponent({
     let tokens = ref<TokenInfo[]>([])
     const showAddButton = ref(true)
     const selectedCardToken = ref({} as TokenInfo)
-    const product = ref<Product> (props.data)
+    const product = ref<Product>(props.data)
     
     // 调用查询绑卡接口
     async function queryCardList() {
@@ -383,6 +383,8 @@ export default defineComponent({
             this.showAddButton = true
             this.hasCards = true
             router.push({ name: 'success', query: { status: OrderStatus.BindCard } })
+          } else {
+            router.push({ name: 'failure', query: { msg: respMsg } })
           }
         }).catch((err) => {
           console.log(err)
@@ -401,6 +403,8 @@ export default defineComponent({
           const { respCode, respMsg } = res
           if (respCode === '20000' && respMsg === 'Success') {
             router.push({ name: 'success', query: { status: OrderStatus.Success } })
+          } else {
+            router.push({ name: 'failure', query: { msg: respMsg } })
           }
         }).catch((err) => {
           console.log(err)
@@ -465,6 +469,8 @@ export default defineComponent({
         const { respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
           router.push({ name: 'success', query: { status: OrderStatus.Success } })
+        } else {
+          router.push({ name: 'failure', query: { msg: respMsg } })
         }
       }).catch((err) => {
         console.log(err)

@@ -102,7 +102,7 @@ export function buildTokenInfo(tokenId: string) {
  */
 export function buildTxnOrderMsg(price: string = '20', productCurrency: string = currency.getCurrency()) {
   const txnOrderMsg: { [key: string]: any } = {}
-  txnOrderMsg['returnUrl'] = 'https://docs.onerway.com'
+  txnOrderMsg['returnUrl'] = 'https://demo.onerway.com/'
   txnOrderMsg['products'] = `[{"price": "${price}","num":"1","name":"iphone11","currency":"${productCurrency}"}]`
   txnOrderMsg['transactionIp'] = fakerEN_US.internet.ip()
   txnOrderMsg['appId'] = APP_ID

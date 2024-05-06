@@ -24,7 +24,7 @@ export default defineComponent({
       {
         id: 1,
         name: 'Apple iPhone 13',
-        price: 799,
+        price: 10,
         currency: currency.getCurrency(),
         quantity: 5,
         image: iphone13,
@@ -34,7 +34,7 @@ export default defineComponent({
       {
         id: 2,
         name: 'Samsung Galaxy S21',
-        price: 699,
+        price: 20,
         currency: currency.getCurrency(),
         quantity: 3,
         image: samsung,
@@ -44,7 +44,7 @@ export default defineComponent({
       {
         id: 3,
         name: 'Google Pixel 6',
-        price: 599,
+        price: 30,
         currency: currency.getCurrency(),
         quantity: 10,
         image: pixel6,
@@ -54,7 +54,7 @@ export default defineComponent({
       {
         id: 4,
         name: 'Apple MacBook Air',
-        price: 999,
+        price: 40,
         currency: currency.getCurrency(),
         quantity: 4,
         image: macbook,
@@ -64,7 +64,7 @@ export default defineComponent({
       {
         id: 5,
         name: 'Dell XPS 13',
-        price: 1099,
+        price: 50,
         currency: currency.getCurrency(),
         quantity: 7,
         image: dell,
@@ -74,7 +74,7 @@ export default defineComponent({
       {
         id: 6,
         name: 'Sony WH-1000XM4',
-        price: 349,
+        price: 60,
         currency: currency.getCurrency(),
         quantity: 15,
         image: sony,
@@ -84,7 +84,7 @@ export default defineComponent({
       {
         id: 7,
         name: 'Bose QuietComfort 35 II',
-        price: 299,
+        price: 45,
         currency: currency.getCurrency(),
         quantity: 12,
         image: bose,
@@ -94,7 +94,7 @@ export default defineComponent({
       {
         id: 8,
         name: 'Apple Watch Series 7',
-        price: 399,
+        price: 75,
         currency: currency.getCurrency(),
         quantity: 20,
         image: watch,
@@ -104,7 +104,7 @@ export default defineComponent({
       {
         id: 9,
         name: 'Fitbit Charge 5',
-        price: 179,
+        price: 300,
         currency: currency.getCurrency(),
         quantity: 25,
         image: fitbit,

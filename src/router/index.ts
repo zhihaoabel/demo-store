@@ -34,6 +34,11 @@ export const routes = [
         path: '/success',
         name: 'success',
         component: () => import('../views/SuccessView.vue')
+      },
+      {
+        path: '/failure',
+        name: 'failure',
+        component: () => import('../views/FailureView.vue')
       }
     ]
   }
