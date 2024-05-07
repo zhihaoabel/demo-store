@@ -26,7 +26,7 @@ export default defineComponent({
         name: 'Apple iPhone 13',
         price: 10,
         currency: currency.getCurrency(),
-        quantity: 5,
+        quantity: 0,
         image: iphone13,
         description: 'Latest model with A15 Bionic chip.',
         link: '/detail'
@@ -36,7 +36,7 @@ export default defineComponent({
         name: 'Samsung Galaxy S21',
         price: 20,
         currency: currency.getCurrency(),
-        quantity: 3,
+        quantity: 0,
         image: samsung,
         description: 'High-resolution cameras and a vibrant display.',
         link: '/detail'
@@ -46,7 +46,7 @@ export default defineComponent({
         name: 'Google Pixel 6',
         price: 30,
         currency: currency.getCurrency(),
-        quantity: 10,
+        quantity: 0,
         image: pixel6,
         description: 'Smartest and fastest Pixel yet.',
         link: '/detail'
@@ -56,7 +56,7 @@ export default defineComponent({
         name: 'Apple MacBook Air',
         price: 40,
         currency: currency.getCurrency(),
-        quantity: 4,
+        quantity: 0,
         image: macbook,
         description: 'With the new M1 chip, it’s our most powerful 13-inch MacBook Air.',
         link: '/detail'
@@ -66,7 +66,7 @@ export default defineComponent({
         name: 'Dell XPS 13',
         price: 50,
         currency: currency.getCurrency(),
-        quantity: 7,
+        quantity: 0,
         image: dell,
         description: 'Stunning inside and out. The most powerful 13-inch in its class.',
         link: '/detail'
@@ -76,7 +76,7 @@ export default defineComponent({
         name: 'Sony WH-1000XM4',
         price: 60,
         currency: currency.getCurrency(),
-        quantity: 15,
+        quantity: 0,
         image: sony,
         description: 'Industry-leading noise canceling with Dual Noise Sensor technology.',
         link: '/detail'
@@ -86,7 +86,7 @@ export default defineComponent({
         name: 'Bose QuietComfort 35 II',
         price: 45,
         currency: currency.getCurrency(),
-        quantity: 12,
+        quantity: 0,
         image: bose,
         description: 'Acoustic Noise Cancelling headphones.',
         link: '/detail'
@@ -96,7 +96,7 @@ export default defineComponent({
         name: 'Apple Watch Series 7',
         price: 75,
         currency: currency.getCurrency(),
-        quantity: 20,
+        quantity: 0,
         image: watch,
         description: 'The future of health is on your wrist.',
         link: '/detail'
@@ -106,7 +106,7 @@ export default defineComponent({
         name: 'Fitbit Charge 5',
         price: 300,
         currency: currency.getCurrency(),
-        quantity: 25,
+        quantity: 0,
         image: fitbit,
         description: 'Optimize your workout routine with a built-in GPS.',
         link: '/detail'

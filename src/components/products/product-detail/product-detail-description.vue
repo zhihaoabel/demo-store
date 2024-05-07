@@ -4,6 +4,7 @@ import { Product } from '@/entities/Product'
 import { useCurrencyStore } from '@/stores/currency'
 import IconShoppingCart from '@/components/icons/IconShoppingCart.vue'
 import router from '@/router'
+import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'ProductDetailDescription',
@@ -18,8 +19,11 @@ export default defineComponent({
   
   setup(props) {
     const currency = useCurrencyStore()
+    const cart = useCartStore()
     
     function clickHandler() {
+      console.log(props.product, 'product')
+      cart.addProduct(props.product)
       // 将 product 传给路由
       router.push({
         name: 'checkout',
@@ -36,8 +40,12 @@ export default defineComponent({
       })
     }
     
+    function handleAddProduct(product: Product) {
+      cart.addProduct(product)
+    }
+    
     return {
-      currency, clickHandler
+      currency, clickHandler, handleAddProduct
     }
   }
 })
@@ -54,15 +62,22 @@ export default defineComponent({
       <div class="detail-price sm:mt-8 max-sm:mt-4">
         <span class="text-xl font-semibold">{{ currency.sign }} {{ product.price }}</span>
       </div>
-      <div class="detail-action sm:mt-6 w-full max-sm:mt-3">
+      <div class="detail-action flex flex-col items-center sm:my-6 max-sm:my-3 w-full">
         <n-button
-          class="flex items-center bg-slate-900 text-white px-4 py-2 rounded-md w-full "
+          class="flex items-center bg-red-600 text-white px-4 py-2 w-full"
           icon-placement="right"
-          @click="clickHandler">
-          <span class="cart-btn">Buy Now</span>
+          round
+          @click="handleAddProduct(product)">
+          <span class="cart-btn">Add To Cart</span>
           <template #icon>
             <icon-shopping-cart class="cart-icon" />
           </template>
+        </n-button>
+        <n-button
+          class="flex items-center bg-slate-900 text-white px-4 py-2 w-full mt-4"
+          round
+          @click="clickHandler">
+          <span class="cart-btn">Buy Now</span>
         </n-button>
       </div>
       <div class="comment-container mt-5 flex items-center max-md:w-full">

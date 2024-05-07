@@ -146,6 +146,13 @@ export default defineConfig({
         },
         changeOrigin: true,
       },
+      '/prod': {
+        target: 'https://acq.onerway.com',
+        rewrite(path) {
+          return path.replace(/^\/prod/, "")
+        },
+        changeOrigin: true,
+      },
     },
   },
   resolve: {

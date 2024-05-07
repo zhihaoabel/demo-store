@@ -8,7 +8,7 @@ export class Product {
   description: string
   link: string
 
-  constructor(id: number, name: string, price: number, currency: string, quantity: number, image: string, description: string, link: string) {
+  constructor(id: number, name: string, price: number, currency: string, quantity: number = 0, image: string, description: string, link: string) {
     this.id = id
     this.name = name
     this.price = price

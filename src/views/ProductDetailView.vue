@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import ProductDetailHeader from '@/components/products/product-detail/product-detail-header.vue'
 import ProductDetailDescription from '@/components/products/product-detail/product-detail-description.vue'
 import ProductDetailRecommendations from '@/components/products/product-detail/product-detail-recommendations.vue'
+import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'ProductDetailView',

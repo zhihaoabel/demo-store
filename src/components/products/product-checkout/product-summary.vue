@@ -2,19 +2,21 @@
 import { defineComponent, onBeforeMount, ref, type Ref, type UnwrapRef } from 'vue'
 import { useCurrencyStore } from '@/stores/currency'
 import type { Product } from '@/entities/Product'
+import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'ProductSummary',
   
   setup(props) {
     const currency = useCurrencyStore()
+    const cart = useCartStore()
     const product: Ref<UnwrapRef<Product>> = ref<Product>({} as Product)
     
     onBeforeMount(() => {
       product.value = props.data
     })
     
-    return { currency, product }
+    return { currency, product, cart }
   },
   
   props: {
@@ -28,7 +30,7 @@ export default defineComponent({
 
 
 <template>
-  <n-card :bordered="false" class="p-8" title="Summary">
+  <n-card :bordered="false" class="ml-8" title="Summary">
     <!--    header，title旁边的内容 -->
     <template #header-extra>
     
@@ -41,23 +43,18 @@ export default defineComponent({
       </div>
     </div>
     
-    <!--    subtotal 和 shipping 内容-->
-    <div class="price-container flex-col my-8">
-      <div class="sub-total flex items-center justify-between">
-        <span>Subtotal</span>
-        <span>{{ currency.sign }} {{ product.price }}</span>
-      </div>
-      <div class="shipping flex items-center justify-between mt-6">
-        <span>Shipping</span>
-        <span>0</span>
-      </div>
-    </div>
-    
-    
     <!--    total 的内容-->
-    <div class="total flex items-center justify-between border-t pt-4">
+    <div class="sub-total flex items-center justify-between mt-4">
+      <span>Subtotal</span>
+      <span>{{ currency.sign }} 0</span>
+    </div>
+    <div class="shipping flex items-center justify-between mt-4">
+      <span>Shipping</span>
+      <span>{{ currency.sign }} 0</span>
+    </div>
+    <div class="total flex items-center justify-between border-t py-2 mt-4">
       <span class="font-bold">Total</span>
-      <span class="font-semibold text-lg text-red-600">{{ currency.sign }} {{ product.price }}</span>
+      <span class="font-semibold text-lg text-red-600">{{ currency.sign }} 0</span>
     </div>
   
   </n-card>

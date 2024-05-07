@@ -6,6 +6,7 @@ import { generateCustId } from '@/utils/util'
 
 const APP_ID = '1727880846378401792'
 const MERCHANT_NO = '800209'
+const CUST_ID = '730850210551402496'
 const currency = useCurrencyStore()
 
 /**
@@ -408,7 +409,7 @@ export async function queryToken() {
   const request = new PaymentRequestBuilder()
     .setAppId(APP_ID)
     .setMerchantNo(MERCHANT_NO)
-    // .setMerchantCustId('custId_1640247522007')
+    // .setMerchantCustId(CUST_ID)
     .setMerchantCustId(await generateCustId())
     .setSign('').build()
 

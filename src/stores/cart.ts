@@ -7,8 +7,9 @@ export const useCartStore = defineStore('cart', {
     cart: {
       id: 0,
       products: [],
-      amount: 0
-    } as Cart
+      amount: 0,
+      price: 0
+    } as Cart,
   }),
 
   actions: {
@@ -22,6 +23,7 @@ export const useCartStore = defineStore('cart', {
         this.cart.products[index].quantity++
       }
       this.cart.amount++
+      this.getTotalPrice()
     },
 
     // 减少商品
@@ -35,6 +37,7 @@ export const useCartStore = defineStore('cart', {
         }
         this.cart.amount--
       }
+      this.getTotalPrice()
     },
 
     // 删除商品
@@ -44,17 +47,20 @@ export const useCartStore = defineStore('cart', {
         this.cart.amount -= this.cart.products[index].quantity
         this.cart.products.splice(index, 1)
       }
+      this.getTotalPrice()
     },
 
     // 清空购物车
     clearCart() {
       this.cart.products = []
       this.cart.amount = 0
+      this.cart.price = 0
     },
 
     // 计算总价格
     getTotalPrice(): number {
-      return this.cart.products.reduce((total, product) => total + product.price * product.quantity, 0)
+      this.cart.price = this.cart.products.reduce((total, product) => total + product.price * product.quantity, 0)
+      return this.cart.price
     },
 
     // 计算某个商品价格
@@ -65,6 +71,19 @@ export const useCartStore = defineStore('cart', {
     // 获取购物车商品数量
     getCartAmount(): number {
       return this.cart.amount
+    },
+
+    // 保存商品信息，价格和数量到本地存储
+    saveCart() {
+      localStorage.setItem('cart', JSON.stringify(this.cart))
+    },
+
+    // 从本地存储中读取商品信息，价格和数量
+    loadCart() {
+      const cart = localStorage.getItem('cart')
+      if (cart) {
+        this.cart = JSON.parse(cart)
+      }
     }
   }
 })
