@@ -1,12 +1,11 @@
 <script lang="ts">
-import { defineComponent, onBeforeMount, type Ref, ref, type UnwrapRef, watch } from 'vue'
+import { defineComponent, onBeforeMount, type Ref, ref, type UnwrapRef } from 'vue'
 import { Product } from '@/entities/Product'
 import { useCurrencyStore } from '@/stores/currency'
 import { useRoute } from 'vue-router'
 import ProductDetailHeader from '@/components/products/product-detail/product-detail-header.vue'
 import ProductDetailDescription from '@/components/products/product-detail/product-detail-description.vue'
 import ProductDetailRecommendations from '@/components/products/product-detail/product-detail-recommendations.vue'
-import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'ProductDetailView',
@@ -27,19 +26,6 @@ export default defineComponent({
         description: String(route.query.description),
         quantity: Number(route.query.stock),
         link: String(route.query.link)
-      }
-    })
-    
-    watch(() => route.query, (query) => {
-      product.value = {
-        id: Number(query.id),
-        name: String(query.name),
-        price: Number(query.price),
-        currency: String(query.currency),
-        image: String(query.image),
-        description: String(query.description),
-        quantity: Number(query.stock),
-        link: String(query.link)
       }
     })
     

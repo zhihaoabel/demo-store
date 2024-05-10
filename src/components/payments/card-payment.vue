@@ -142,7 +142,9 @@ export default defineComponent({
     let tokens = ref<TokenInfo[]>([])
     const showAddButton = ref(true)
     const selectedCardToken = ref({} as TokenInfo)
-    const product = ref<Product>(props.data)
+    const products = ref<Product[]>(props.data)
+    // 根据products里的price以及quantity计算总价
+    const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
     
     // 调用查询绑卡接口
     async function queryCardList() {
@@ -224,7 +226,8 @@ export default defineComponent({
       showModal,
       deleteCard,
       selectedCardToken,
-      product
+      products,
+      totalPrice
     }
   },
   
@@ -254,7 +257,7 @@ export default defineComponent({
   
   props: {
     data: {
-      type: Object as () => Product,
+      type: Object as () => Product[],
       required: true
     }
   },
@@ -423,7 +426,7 @@ export default defineComponent({
     },
     
     async buildDirectPayment(cardInfo: any) {
-      return await directCard(this.product.price.toString(), cardInfo)
+      return await directCard(this.totalPrice.toString(), cardInfo)
     },
     
     async buildBindCard(cardInfo: any) {
@@ -463,7 +466,7 @@ export default defineComponent({
       this.showSavedSpin = true
       const { tokenId } = card
       
-      const request = await payByTokenId(tokenId, this.product.price.toString())
+      const request = await payByTokenId(tokenId, this.totalPrice.toString())
       
       api.post('/api/v1/txn/doTransaction', request).then((res: any) => {
         const { respCode, respMsg } = res

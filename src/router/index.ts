@@ -39,6 +39,11 @@ export const routes = [
         path: '/failure',
         name: 'failure',
         component: () => import('../views/FailureView.vue')
+      },
+      {
+        path: '/cart',
+        name: 'cart',
+        component: () => import('../views/CartView.vue')
       }
     ]
   }

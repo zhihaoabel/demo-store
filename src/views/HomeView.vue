@@ -5,8 +5,18 @@ import PageFooter from '@/components/layout/footer/page-footer.vue'
 
 <template>
   <n-layout >
-    <page-header />
+    <page-header class="self-center w-full"/>
     <router-view />
-    <page-footer />
+    <page-footer class="fixed bottom-0 self-center w-full"/>
   </n-layout>
 </template>
+
+<style scoped>
+
+:deep(.n-layout-scroll-container) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+</style>

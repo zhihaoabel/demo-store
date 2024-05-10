@@ -10,6 +10,8 @@ export const useCartStore = defineStore('cart', {
       amount: 0,
       price: 0
     } as Cart,
+    // 直接下单的商品
+    directOrderProduct: {} as Product
   }),
 
   actions: {
@@ -17,8 +19,10 @@ export const useCartStore = defineStore('cart', {
     addProduct(product: Product) {
       const index = this.cart.products.findIndex(p => p.id === product.id)
       if (index === -1) {
-        product.quantity++
-        this.cart.products.push(product)
+        // 隔离购物车商品和直接下单商品数量
+        const product_copy = JSON.parse(JSON.stringify(product))
+        product_copy.quantity = 1
+        this.cart.products.push(product_copy)
       } else {
         this.cart.products[index].quantity++
       }
@@ -57,8 +61,9 @@ export const useCartStore = defineStore('cart', {
       this.cart.price = 0
     },
 
-    // 计算总价格
+    // 购物车计算总价格
     getTotalPrice(): number {
+      // 如果有直接下单的商品，则直接返回该商品价格
       this.cart.price = this.cart.products.reduce((total, product) => total + product.price * product.quantity, 0)
       return this.cart.price
     },
@@ -71,6 +76,11 @@ export const useCartStore = defineStore('cart', {
     // 获取购物车商品数量
     getCartAmount(): number {
       return this.cart.amount
+    },
+
+    // 进入checkout页面后获取支付金额
+    getPaymentAmount(): number {
+      return this.directOrderProduct.price || this.getTotalPrice()
     },
 
     // 保存商品信息，价格和数量到本地存储

@@ -22,22 +22,13 @@ export default defineComponent({
     const cart = useCartStore()
     
     function clickHandler() {
-      console.log(props.product, 'product')
-      cart.addProduct(props.product)
-      // 将 product 传给路由
-      router.push({
-        name: 'checkout',
-        query: {
-          id: props.product.id,
-          name: props.product.name,
-          price: props.product.price,
-          currency: props.product.currency,
-          image: props.product.image,
-          description: props.product.description,
-          stock: props.product.quantity,
-          link: props.product.link
-        }
-      })
+      // 直接下单需要给这个 directOrderProduct 赋值
+      cart.directOrderProduct = props.product
+      cart.directOrderProduct.quantity = 1
+      // 保存 directOrderProduct 到 localStorage
+      localStorage.setItem('directOrderProduct', JSON.stringify(cart.directOrderProduct))
+      // 跳转到 checkout 页面
+      router.hasRoute('checkout') && router.push({ name: 'checkout' })
     }
     
     function handleAddProduct(product: Product) {

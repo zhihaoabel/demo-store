@@ -2,9 +2,9 @@
 
 import ProductSummary from '@/components/products/product-checkout/product-summary.vue'
 import ProductPayment from '@/components/products/product-checkout/product-payment.vue'
-import { defineComponent, onBeforeMount, ref, type Ref, type UnwrapRef } from 'vue'
-import { useRoute } from 'vue-router'
+import { defineComponent, onBeforeMount, onUnmounted, ref, type Ref, type UnwrapRef } from 'vue'
 import { Product } from '@/entities/Product'
+import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'CheckoutView',
@@ -13,24 +13,32 @@ export default defineComponent({
     ProductPayment
   },
   setup() {
-    const route = useRoute()
-    let product: Ref<UnwrapRef<Product>> = ref<Product>({} as Product)
+    const cart = useCartStore()
+    let products: Ref<UnwrapRef<Product[]>> = ref<Product[]>({} as Product[])
     
     onBeforeMount(() => {
-      product.value = {
-        id: Number(route.query.id),
-        name: String(route.query.name),
-        price: Number(route.query.price),
-        currency: String(route.query.currency),
-        image: String(route.query.image),
-        description: String(route.query.description),
-        quantity: Number(route.query.stock),
-        link: String(route.query.link)
+      // 优先从localStorage中获取直接下单的商品
+      const directOrderProduct = localStorage.getItem('directOrderProduct')
+      if (directOrderProduct) {
+        products.value = [JSON.parse(directOrderProduct)]
+        cart.directOrderProduct = JSON.parse(directOrderProduct)
+        return
+      }
+      // 直接下单和购物车二选一
+      if (cart.directOrderProduct) {
+        products.value = [cart.directOrderProduct]
+      } else {
+        products.value = cart.cart.products
       }
     })
     
+    onUnmounted(() => {
+      // 清除直接下单的商品
+      localStorage.removeItem('directOrderProduct')
+    })
+    
     return {
-      product
+      products
     }
   }
 })
@@ -39,8 +47,8 @@ export default defineComponent({
 <template>
   <div
     class="checkout-container grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 justify-center p-2 max-w-6xl mx-auto">
-    <product-summary :data="product" class="max-w-96 mx-auto w-full sm:border-r-2 border-slate-100 " />
-    <product-payment :data="product" class="col-span-2" />
+    <product-summary :data="products" class="max-w-96 mx-auto w-full sm:border-r-2 border-slate-100 " />
+    <product-payment :data="products" class="col-span-2" />
   </div>
 </template>
 

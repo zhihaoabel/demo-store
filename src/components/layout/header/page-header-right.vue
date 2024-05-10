@@ -52,8 +52,6 @@ export default defineComponent({
     }
   },
   
-  props: {},
-  
   methods: {
     handleSelect() {
       this.show.toggleShowCart()
