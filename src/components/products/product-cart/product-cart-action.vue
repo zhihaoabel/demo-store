@@ -1,25 +1,37 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, type Ref, ref } from 'vue'
 import { useShowStore } from '@/stores/show'
 import router from '@/router'
+import type { Product } from '@/entities/Product'
+import { useCartStore } from '@/stores/cart'
 
 export default defineComponent({
   name: 'ProductCartAction',
   setup(props, ctx) {
     const show = useShowStore()
+    const cart = useCartStore()
     const showCart = ref<boolean>(show.showCart)
+    const products:Ref = ref<Product[]>([] as Product[])
+    
+    products.value = props.product as Product[]
     
     function toggleCart() {
       show.toggleShowCart()
     }
     
     function toCart() {
-      router.push({ name: 'cart' })
+      router.push({ name: 'cart', query: { date: new Date().getTime() } })
     }
     
     return {
-      props, ctx, showCart, show, toggleCart, toCart
+      props, ctx, showCart, show, toggleCart, toCart, cart
     }
+  },
+  
+  props: {
+    product: {
+      type: Object as () => Product[],
+    },
   }
   
 })

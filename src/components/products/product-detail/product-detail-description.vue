@@ -28,7 +28,7 @@ export default defineComponent({
       // 保存 directOrderProduct 到 localStorage
       localStorage.setItem('directOrderProduct', JSON.stringify(cart.directOrderProduct))
       // 跳转到 checkout 页面
-      router.hasRoute('checkout') && router.push({ name: 'checkout' })
+      router.hasRoute('checkout') && router.push({ name: 'checkout', query: { date: new Date().getTime() } })
     }
     
     function handleAddProduct(product: Product) {

@@ -4,7 +4,7 @@ import type { Cart } from '@/entities/Cart'
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
-    cart: {
+    cart: JSON.parse(<string>localStorage.getItem('cart')) || {
       id: 0,
       products: [],
       amount: 0,
@@ -17,7 +17,7 @@ export const useCartStore = defineStore('cart', {
   actions: {
     // 增加商品
     addProduct(product: Product) {
-      const index = this.cart.products.findIndex(p => p.id === product.id)
+      const index = this.cart.products.findIndex((p: Product) => p.id === product.id)
       if (index === -1) {
         // 隔离购物车商品和直接下单商品数量
         const product_copy = JSON.parse(JSON.stringify(product))
@@ -32,7 +32,7 @@ export const useCartStore = defineStore('cart', {
 
     // 减少商品
     removeProduct(product: Product) {
-      const index = this.cart.products.findIndex(p => p.id === product.id)
+      const index = this.cart.products.findIndex((p: Product) => p.id === product.id)
       if (index !== -1) {
         if (this.cart.products[index].quantity === 1) {
           this.cart.products.splice(index, 1)
@@ -46,7 +46,7 @@ export const useCartStore = defineStore('cart', {
 
     // 删除商品
     deleteProduct(product: Product) {
-      const index = this.cart.products.findIndex(p => p.id === product.id)
+      const index = this.cart.products.findIndex((p: Product) => p.id === product.id)
       if (index !== -1) {
         this.cart.amount -= this.cart.products[index].quantity
         this.cart.products.splice(index, 1)
@@ -59,17 +59,18 @@ export const useCartStore = defineStore('cart', {
       this.cart.products = []
       this.cart.amount = 0
       this.cart.price = 0
+      localStorage.removeItem('cart')
     },
 
     // 购物车计算总价格
     getTotalPrice(): number {
       // 如果有直接下单的商品，则直接返回该商品价格
-      this.cart.price = this.cart.products.reduce((total, product) => total + product.price * product.quantity, 0)
+      this.cart.price = this.cart.products.reduce((total: number, product: Product) => total + product.price * product.quantity, 0)
       return this.cart.price
     },
 
-    // 计算某个商品价格
-    getProductPrice(product: Product): number {
+    // 计算某个商品总价格
+    getSubtotal(product: Product): number {
       return product.price * product.quantity
     },
 

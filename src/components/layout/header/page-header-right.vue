@@ -68,6 +68,7 @@ export default defineComponent({
     'cart': {
       handler() {
         this.cartAmount = this.cart.getCartAmount()
+        this.cart.saveCart()
       },
       deep: true
     }

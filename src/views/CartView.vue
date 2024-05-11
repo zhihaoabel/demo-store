@@ -1,142 +1,219 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import IconArrowDown from '@/components/icons/IconArrowDown.vue'
+import { defineComponent, h, onMounted, ref } from 'vue'
+import { type DataTableColumns, NButton, NImage } from 'naive-ui'
+import { useCurrencyStore } from '@/stores/currency'
+import type { Product } from '@/entities/Product'
+import { useCartStore } from '@/stores/cart'
+import { useShowStore } from '@/stores/show'
+import router from '@/router'
 
 export default defineComponent({
   name: 'CartView',
-  components: { IconArrowDown },
+  components: {},
+  
   setup(props, ctx) {
     const value = ref(1)
-    const options = ref([
-      { label: '1', value: 1111 },
-      { label: '2', value: 2 },
-      { label: '3', value: 3 },
-      { label: '4', value: 4 },
-      { label: '5', value: 5 },
-      { label: '6', value: 6 },
-      { label: '7', value: 7 },
-      { label: '8', value: 8 },
-      { label: '9', value: 9 },
-      { label: '10', value: 10 }
-    ])
-    return { props, ctx, options, value }
+    const currency = useCurrencyStore()
+    const show = useShowStore()
+    const cart = useCartStore()
+    
+    const createColumns = (): DataTableColumns<Product> => {
+      return [
+        {
+          key: 'image',
+          align: 'center',
+          className: 'text-nowrap',
+          width: 100,
+          title() {
+            return h(
+              'span',
+              {
+                class: 'text-lg font-semibold text-[#57606f]'
+              },
+              { default: () => 'Item' }
+            )
+          },
+          fixed: 'left',
+          render(row) {
+            return h(
+              NImage,
+              {
+                src: row.image,
+                alt: row.image,
+                class: 'max-sm:w-8 w-32',
+                style: 'object-fit: cover; border-radius: 0.375rem;'
+              }
+            )
+          }
+        },
+        {
+          title: '',
+          key: 'product',
+          className: 'text-nowrap',
+          width: 200,
+          align: 'center',
+          render(row) {
+            return h('span',
+              {
+                class: 'font-semibold text-slate-[#a4b0be] text-nowrap'
+              },
+              { default: () => row.description }
+            )
+          }
+        },
+        {
+          title() {
+            return h(
+              'span',
+              {
+                class: 'text-lg font-semibold text-[#57606f]'
+              },
+              { default: () => 'Quantity' }
+            )
+          },
+          key: 'quantity',
+          className: 'text-nowrap',
+          width: 200,
+          align: 'center',
+          // 给商品数量增加+和-按钮, 数量不允许<0
+          render(row) {
+            return h('div', {
+              class: 'flex items-center justify-center'
+            }, [
+              h(NButton, {
+                size: 'small',
+                circle: true,
+                onClick: () => {
+                  if (row.quantity > 0) {
+                    cart.removeProduct(row)
+                  }
+                }
+              }, {
+                default: () => '-'
+              }),
+              h('span', {
+                class: 'mx-2 text-lg font-bold'
+              }, row.quantity),
+              h(NButton, {
+                circle: true,
+                size: 'small',
+                onClick: () => {
+                  cart.addProduct(row)
+                }
+              }, {
+                default: () => '+'
+              })
+            ])
+          }
+        },
+        {
+          title() {
+            return h(
+              'span',
+              {
+                class: 'text-lg font-semibold text-[#57606f]'
+              },
+              { default: () => 'Price' }
+            )
+          },
+          key: 'price',
+          className: 'text-nowrap',
+          align: 'center',
+          render(row) {
+            return h('span', {
+              class: 'text-slate-[#a4b0be]'
+            }, currency.sign + ' ' + row.price)
+          }
+        },
+        {
+          title() {
+            return h(
+              'span',
+              {
+                class: 'text-lg font-semibold text-[#57606f] text-nowrap'
+              },
+              { default: () => 'Subtotal' }
+            )
+          },
+          fixed: 'right',
+          align: 'center',
+          key: 'subtotal',
+          render(row) {
+            return h('span', {
+              class: 'font-semibold text-slate-[#a4b0be]'
+            }, currency.sign + ' ' + cart.getSubtotal(row))
+          }
+        }
+      ]
+    }
+    const createSummary = (pageData: Product[]) => {
+      return {
+        image: {
+          value: h(
+            'div', {
+              class: 'flex items-center sm:justify-between sm:px-64 max-sm:justify-start max-sm:px-64 w-full'
+            },
+            [
+              h('span', {
+                class: 'text-xl font-semibold text-[#57606f]'
+              }, `Total: `),
+              h('span', {
+                class: 'text-xl font-semibold text-[#d63031] ml-4'
+              }, currency.sign + ' ' + (pageData).reduce(
+                (prevValue, row) => prevValue + row.price * row.quantity,
+                0
+              ))
+            ]
+          ),
+          colSpan: 5
+        }
+      }
+    }
+    
+    onMounted(() => {
+      show.showCart = false
+    })
+    
+    const checkout = () => {
+      cart.directOrderProduct = {} as Product
+      router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+    }
+    
+    return { props, ctx, value, cols: createColumns(), currency, createSummary, checkout, cart }
+  },
+  
+  props: {
+    product: {
+      type: Object as () => Product[]
+    }
   }
 })
 
 </script>
 
 <template>
-  <div class="sm:px-32 sm:py-16 max-sm:px-6 max-sm:py-4">
-    <h1 class="text-3xl font-bold mb-8">Your Cart</h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-      <div class="col-span-2 space-y-6">
-        <div class="grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b pb-4">
-          <img
-            alt="Product Image"
-            class="rounded-md object-cover"
-            height="80"
-            src="https://cdn.britannica.com/14/162014-050-45C1FD13/warm-bloodedness-opah-results-heat-exchange-system-gills.jpg"
-            style="aspect-ratio: 80 / 80; object-fit: cover;"
-            width="80"
-          />
-          <div>
-            <h3 class="font-medium">Acme Circles T-Shirt</h3>
-            <p class="text-gray-500"></p>
-          </div>
-          <div class="flex items-center gap-2">
-            <p class="font-medium">$99</p>
-            <button
-              aria-autocomplete="none"
-              aria-controls="radix-:r44:"
-              aria-expanded="false"
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2  disabled:cursor-not-allowed disabled:opacity-50"
-              data-state="closed"
-              dir="ltr"
-              role="combobox"
-              type="button"
-            >
-              <span style="pointer-events: none;"></span>
-              <svg
-                aria-hidden="true"
-                class="h-4 w-4 opacity-50"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
-            <select
-              aria-hidden="true"
-              style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; overflow-wrap: normal;"
-              tabindex="-1"
-            ></select>
-          </div>
-        </div>
-        <div class="grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b pb-4">
-          <!--  todo: src 使用产品图-->
-          <img
-            alt="Product Image"
-            class="rounded-md object-cover"
-            height="80"
-            src="https://cdn.britannica.com/14/162014-050-45C1FD13/warm-bloodedness-opah-results-heat-exchange-system-gills.jpg"
-            style="aspect-ratio: 80 / 80; object-fit: cover;"
-            width="80"
-          />
-          <!--  todo: 使用商品标题-->
-          <div>
-            <h3 class="font-medium">${商品标题}</h3>
-            <p class="text-gray-500"></p>
-          </div>
-          <div class="flex items-center gap-2">
-            <p class="font-medium text-nowrap">${商品价格}</p>
-            <n-select v-model:value="value" :options="options" style="width: 60px" :consistent-menu-width="false">
-              <n-icon>
-                <icon-arrow-down />
-              </n-icon>
-            </n-select>
-          </div>
-        </div>
-      </div>
-      
-      <!--      order summary-->
-      <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 space-y-4">
-        <h2 class="text-xl font-bold">Order Summary</h2>
-        <div class="flex justify-between">
-          <p>Subtotal</p>
-          <p>$297</p>
-        </div>
-        <div class="flex justify-between">
-          <p>Shipping</p>
-          <p>$0</p>
-        </div>
-        <div class="shrink-0 bg-gray-100 h-[1px] w-full" data-orientation="horizontal" role="none"></div>
-        <div class="flex justify-between font-medium">
-          <p>Total</p>
-          <p>$297</p>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button
-            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-            Continue Shopping
-          </button>
-          <button
-            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-            Checkout
-          </button>
-        </div>
+  <div class="sm:px-32 sm:py-16 max-sm:px-6 max-sm:py-4 font-pt-sans overflow-auto">
+    <div class="cart-header flex items-center justify-between">
+      <h2 class="text-3xl font-bold mb-8">Shopping Cart</h2>
+      <div class="cart-button-group">
+        <button
+          class="font-medium px-5 py-2.5 border rounded-lg hover:text-gray-100 hover:bg-red-600 ring-red-900 active:ring-1 hover:shadow-lg hover:font-semibold shadow-red-500"
+          @click="cart.clearCart">
+          Clear Cart
+        </button>
+        <button
+          class="ml-2 bg-slate-900 text-gray-50 px-5 py-2.5 border rounded-lg hover:bg-slate-700 hover:text-gray-100 ring-cyan-900 active:ring-1 hover:shadow-lg hover:font-semibold shadow-blue-500"
+          @click="checkout">
+          Proceed to Checkout
+        </button>
       </div>
     </div>
+    <n-data-table :columns="cols" :data="cart.cart.products" :size="'large'" :summary="createSummary" bordered
+                  class="rounded-2xl"
+                  summary-placement="bottom">
+    </n-data-table>
   </div>
 </template>
 
 <style scoped>
-
 </style>

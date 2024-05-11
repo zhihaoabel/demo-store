@@ -385,9 +385,9 @@ export default defineComponent({
           if (respCode === '20000' && respMsg === 'Success') {
             this.showAddButton = true
             this.hasCards = true
-            router.push({ name: 'success', query: { status: OrderStatus.BindCard } })
+            router.push({ name: 'success', query: { status: OrderStatus.BindCard, date: new Date().getTime()} })
           } else {
-            router.push({ name: 'failure', query: { msg: respMsg } })
+            router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
           }
         }).catch((err) => {
           console.log(err)
@@ -405,9 +405,9 @@ export default defineComponent({
         api.post('/api/v1/txn/doTransaction', request).then((res: any) => {
           const { respCode, respMsg } = res
           if (respCode === '20000' && respMsg === 'Success') {
-            router.push({ name: 'success', query: { status: OrderStatus.Success } })
+            router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })
           } else {
-            router.push({ name: 'failure', query: { msg: respMsg } })
+            router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
           }
         }).catch((err) => {
           console.log(err)
@@ -471,9 +471,9 @@ export default defineComponent({
       api.post('/api/v1/txn/doTransaction', request).then((res: any) => {
         const { respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
-          router.push({ name: 'success', query: { status: OrderStatus.Success } })
+          router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })
         } else {
-          router.push({ name: 'failure', query: { msg: respMsg } })
+          router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
         }
       }).catch((err) => {
         console.log(err)

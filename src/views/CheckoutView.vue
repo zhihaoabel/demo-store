@@ -18,14 +18,14 @@ export default defineComponent({
     
     onBeforeMount(() => {
       // 优先从localStorage中获取直接下单的商品
-      const directOrderProduct = localStorage.getItem('directOrderProduct')
-      if (directOrderProduct) {
-        products.value = [JSON.parse(directOrderProduct)]
-        cart.directOrderProduct = JSON.parse(directOrderProduct)
+      const directOrderProduct = ref(localStorage.getItem('directOrderProduct'))
+      if (directOrderProduct.value) {
+        products.value = [JSON.parse(directOrderProduct.value)]
+        cart.directOrderProduct = JSON.parse(directOrderProduct.value)
         return
       }
       // 直接下单和购物车二选一
-      if (cart.directOrderProduct) {
+      if (cart.directOrderProduct.id) {
         products.value = [cart.directOrderProduct]
       } else {
         products.value = cart.cart.products

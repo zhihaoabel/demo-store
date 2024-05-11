@@ -93,7 +93,7 @@ export const useCurrencyStore = defineStore('currency', {
       'USD - United States': 'US',
       'VND - Vietnam': 'VN'
     } as { [key: string]: string },
-    sign: '$'
+    sign: localStorage.getItem('sign') || '$'
   }),
 
   actions: {
@@ -107,6 +107,7 @@ export const useCurrencyStore = defineStore('currency', {
       this.options.forEach(option => {
         if (option.value === this.currency) {
           this.sign = option.sign
+          localStorage.setItem('sign', option.sign)
         }
       })
     },
