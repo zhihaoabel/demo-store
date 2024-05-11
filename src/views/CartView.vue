@@ -202,7 +202,7 @@ export default defineComponent({
           Clear Cart
         </button>
         <button
-          class="ml-2 bg-slate-900 text-gray-50 px-5 py-2.5 border rounded-lg hover:bg-slate-700 hover:text-gray-100 ring-cyan-900 active:ring-1 hover:shadow-lg hover:font-semibold shadow-blue-500"
+          class="ml-4 bg-slate-900 text-gray-50 px-5 py-2.5 border rounded-lg hover:bg-slate-700 hover:text-gray-100 ring-cyan-900 active:ring-1 hover:shadow-lg hover:font-semibold shadow-blue-500"
           @click="checkout">
           Proceed to Checkout
         </button>
