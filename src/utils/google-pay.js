@@ -1,4 +1,5 @@
 import router from '../router/index.ts'
+import { OrderStatus } from '@/enums/OrderStatus.ts'
 
 /**
  * Define the version of the Google Pay API referenced when creating your
@@ -245,6 +246,6 @@ export function processPayment(paymentData) {
   console.log(JSON.stringify(JSON.stringify(paymentToken)), 'paymentToken');
   // 等待一秒，路由到/success页面
   setTimeout(() => {
-    router.push({path: '/success'});
+    router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } });
   }, 1000);
 }
