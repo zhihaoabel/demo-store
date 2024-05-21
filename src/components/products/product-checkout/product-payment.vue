@@ -96,9 +96,10 @@ export default defineComponent({
       showTooltip: false
     } as { [key: string]: any })
     const showGooglePayBtn = ref(false)
-    const products = ref<Product[]> (props.data)
+    const products = ref<Product[]>(props.data)
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const pacypay = ref<any>(null)
     
     const options: object = {
       container: 'pacypay_checkout',
@@ -131,6 +132,7 @@ export default defineComponent({
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
+        showPayButton: false,
         variables: {
           'colorBackground': 'white', // 主题背景色
           'colorPrimary': '#727272', // 主题色，如输入框高亮、光标颜色
@@ -257,7 +259,7 @@ export default defineComponent({
       })
     }
     
-    onMounted(() => {
+    onMounted(async () => {
       // 渲染 Google pay按钮
       const script = document.createElement('script')
       script.src = 'https://pay.google.com/gp/p/js/pay.js'
@@ -267,7 +269,15 @@ export default defineComponent({
       script.onload = () => {
         onGooglePayLoaded()
       }
+      
+      // todo: 1.Onerway js-sdk收银台
+      // const txnId = await order()
+      // pacypay.value = new Pacypay(txnId, options)
     })
+    
+    function handleSubmit() {
+      pacypay.value.submit()
+    }
     
     watch(() => currency.currency, () => {
       supportedPayments.value = currency.getSupportedPayments()
@@ -287,7 +297,9 @@ export default defineComponent({
       renderMessage,
       showGooglePayBtn,
       products,
-      totalPrice
+      totalPrice,
+      pacypay,
+      handleSubmit
     }
   },
   
@@ -561,13 +573,18 @@ export default defineComponent({
         <div class="google-pay-button-container flex-col w-full mt-4">
           <div id="google-container" class="google-apple-pay-container ">
           </div>
-          <n-divider >
+          <n-divider>
             Or pay with
           </n-divider>
         </div>
       </template>
-      <!--      两方支付-->
-      <card-payment :data="products"/>
+      <!--   todo:  2.js-sdk收银台渲染-->
+      <!--      <div class="onerway-payments-container flex-col items-center">-->
+      <!--        <div id='pacypay_checkout'></div>-->
+      <!--        <n-button class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>-->
+      <!--      </div>-->
+      <!--            两方支付-->
+      <card-payment :data="products" />
       <!--      本地支付-->
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
