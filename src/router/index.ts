@@ -44,6 +44,11 @@ export const routes = [
         path: '/cart',
         name: 'cart',
         component: () => import('../views/CartView.vue')
+      },
+      {
+        path: '/ga',
+        name: 'google-apple-pay',
+        component: () => import('../views/GoogleApplePayView.vue')
       }
     ]
   }

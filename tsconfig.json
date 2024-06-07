@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "allowJs": true
+  },
   "files": [],
   "references": [
     {
@@ -10,5 +13,13 @@
     {
       "path": "./tsconfig.vitest.json"
     }
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.vue"
   ]
 }
