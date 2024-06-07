@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
 import { defineComponent, onMounted } from 'vue'
 import '../utils/pacypay-ga.js'
+import { placeOrder, placeOrder2 } from '@/utils/payment-request.js'
+import api from '@/utils/api.js'
 
 export default defineComponent({
   name: 'GoogleApplePay',
@@ -19,11 +21,11 @@ export default defineComponent({
         applePayButtonType: 'buy', // 'add-money' | 'book' | 'buy' | 'check-out' | 'continue' | 'contribute' | 'donate' | 'order' | 'plain' | 'reload' | 'rent' | 'subscribe' | 'support' | 'tip' | 'top-up' | 'pay'
         applePayButtonColor: 'black',  // 'black' | 'white' | 'white-outline'
         googlePayEnvironment: 'TEST', // TEST PRODUCTION
-        buttonWidth: '100px', // 按钮宽度
+        buttonWidth: '200px', // 按钮宽度
         buttonHeight: '40px', // 按钮高度
         buttonRadius: '4px' // 按钮圆角边框
       },
-      onPaymentCompleted: function(res) { // 成功支付后回调方法
+      onPaymentCompleted: function(res:any) { // 成功支付后回调方法
         const txtInfo = res.data // 返回交易结果详情
         const respCode = res.respCode // 响应码
         const respMsg = res.respMsg // 响应信息
@@ -37,21 +39,32 @@ export default defineComponent({
           }
         } else {
           // 交易失败
+          console.log(respMsg, '交易失败')
         }
       },
-      onError: function(err) {
+      onError: function(err: any) {
         //支付异常回调方法
         console.log('res', err)
       }
     }
     
+    const order = async () => {
+      const req: object = await placeOrder2('10')
+      return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
+        const { data, respCode, respMsg } = res
+        if (respCode === '20000' && respMsg === 'Success') {
+          return data['transactionId']
+        } else {
+          console.log('Payment failed', respMsg)
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    }
+    
     const pullUpSDK = async () => {
-      const txnId = '1798664833147998208'
-      if (!txnId) {
-        console.log('txnId is null')
-        return
-      }
-      // Onerway 收银台
+      const txnId = await order()
+      // Onerway Google Apple Pay
       new Pacypay(txnId, options)
     }
     
@@ -65,8 +78,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="onerway-google-apple-pay-container">
-    <div id='pacypay_checkout_btns'>111</div>
+  <div class="onerway-google-apple-pay-container flex items-center justify-between">
+    <div id='pacypay_checkout_btns'></div>
   </div>
 </template>
 

@@ -195,6 +195,13 @@ export function placeOrder(amount: string) {
 }
 
 /**
+ * Google Apple Pay 下单
+ */
+export function placeOrder2(amount: string) {
+  return createPaymentRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
+}
+
+/**
  * alipay+
  * @param amount 金额
  */
