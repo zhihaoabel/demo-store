@@ -7,7 +7,7 @@
       </template>
       <p v-html="product.description"></p>
       <template #footer>
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between text-center">
           <span>{{ currency.sign }} {{ product.price }}</span>
         </div>
       </template>

@@ -23,92 +23,92 @@ export default defineComponent({
     const products: Product[] = [
       {
         id: 1,
-        name: 'Apple iPhone 13',
+        name: 'Image 1',
         price: 10,
         currency: currency.getCurrency(),
         quantity: 0,
         image: iphone13,
-        description: 'Latest model with A15 Bionic chip.',
+        description: 'This is an image 1 description.',
         link: '/detail'
       },
       {
         id: 2,
-        name: 'Samsung Galaxy S21',
+        name: 'Image 2',
         price: 20,
         currency: currency.getCurrency(),
         quantity: 0,
         image: samsung,
-        description: 'High-resolution cameras and a vibrant display.',
+        description: 'This is an image 2 description.',
         link: '/detail'
       },
       {
         id: 3,
-        name: 'Google Pixel 6',
+        name: 'Image 3',
         price: 30,
         currency: currency.getCurrency(),
         quantity: 0,
         image: pixel6,
-        description: 'Smartest and fastest Pixel yet.',
+        description: 'This is an image 3 description.',
         link: '/detail'
       },
       {
         id: 4,
-        name: 'Apple MacBook Air',
+        name: 'Image 4',
         price: 40,
         currency: currency.getCurrency(),
         quantity: 0,
         image: macbook,
-        description: 'With the new M1 chip, it’s our most powerful 13-inch MacBook Air.',
+        description: 'This is an image 4 description.',
         link: '/detail'
       },
       {
         id: 5,
-        name: 'Dell XPS 13',
+        name: 'Image 5',
         price: 50,
         currency: currency.getCurrency(),
         quantity: 0,
         image: dell,
-        description: 'Stunning inside and out. The most powerful 13-inch in its class.',
+        description: 'This is an image 5 description.',
         link: '/detail'
       },
       {
         id: 6,
-        name: 'Sony WH-1000XM4',
+        name: 'Image 6',
         price: 60,
         currency: currency.getCurrency(),
         quantity: 0,
         image: sony,
-        description: 'Industry-leading noise canceling with Dual Noise Sensor technology.',
+        description: 'This is an image 6 description.',
         link: '/detail'
       },
       {
         id: 7,
-        name: 'Bose QuietComfort 35 II',
+        name: 'Image 7',
         price: 45,
         currency: currency.getCurrency(),
         quantity: 0,
         image: bose,
-        description: 'Acoustic Noise Cancelling headphones.',
+        description: 'This is an image 7 description.',
         link: '/detail'
       },
       {
         id: 8,
-        name: 'Apple Watch Series 7',
+        name: 'Image 8',
         price: 75,
         currency: currency.getCurrency(),
         quantity: 0,
         image: watch,
-        description: 'The future of health is on your wrist.',
+        description: 'This is an image 8 description.',
         link: '/detail'
       },
       {
         id: 9,
-        name: 'Fitbit Charge 5',
+        name: 'Image 9',
         price: 300,
         currency: currency.getCurrency(),
         quantity: 0,
         image: fitbit,
-        description: 'Optimize your workout routine with a built-in GPS.',
+        description: 'This is an image 9 description.',
         link: '/detail'
       }
     ]
