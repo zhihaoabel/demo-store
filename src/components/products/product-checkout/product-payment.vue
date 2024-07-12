@@ -1,7 +1,9 @@
 <script lang="ts">
 import { defineComponent, h, onMounted, type Ref, ref, watch } from 'vue'
 import { onGooglePayLoaded } from '@/utils/google-pay'
-import Pacypay from '@/utils/pacypay'
+// import Pacypay from '@/utils/pacypay'
+// import '@/utils/pacypay_old'
+import '@/utils/onerway'
 import { useCurrencyStore } from '@/stores/currency'
 import IconRedirect from '@/components/icons/IconRedirect.vue'
 import {
@@ -104,6 +106,7 @@ export default defineComponent({
     const options: object = {
       container: 'pacypay_checkout',
       onPaymentCompleted: async (res: any) => {
+        console.log('onPaymentCompleted', res)
         const respCode = res.respCode
         const respMsg = res.respMsg
         if (respCode === '20000') {
@@ -119,10 +122,12 @@ export default defineComponent({
         }
       },
       onError: async function() {
+        console.log('onError')
         //支付异常回调方法
         await pullUpSDK()
       },
       onFinished: async function() {
+        console.log('onFinished')
         // 支付完成（不管成功或失败）回调方法
       },
       locale: 'en',
@@ -132,7 +137,7 @@ export default defineComponent({
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
-        showPayButton: false,
+        showPayButton: true,
         variables: {
           'colorBackground': 'white', // 主题背景色
           'colorPrimary': '#727272', // 主题色，如输入框高亮、光标颜色
@@ -239,7 +244,7 @@ export default defineComponent({
         return
       }
       // Onerway 收银台
-      new Pacypay(txnId, options)
+      // new Pacypay(txnId, options)
     }
     
     const renderMessage: MessageRenderMessage = (props) => {
@@ -270,9 +275,10 @@ export default defineComponent({
         onGooglePayLoaded()
       }
       
+      console.log('收银台拉起')
       // todo: 1.Onerway js-sdk收银台
       // const txnId = await order()
-      // pacypay.value = new Pacypay(txnId, options)
+      pacypay.value = new Pacypay('1811645628628209664', options)
     })
     
     function handleSubmit() {
@@ -579,10 +585,10 @@ export default defineComponent({
         </div>
       </template>
       <!--   todo:  2.js-sdk收银台渲染-->
-      <!--      <div class="onerway-payments-container flex-col items-center">-->
-      <!--        <div id='pacypay_checkout'></div>-->
-      <!--        <n-button class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>-->
-      <!--      </div>-->
+      <div class="onerway-payments-container flex-col items-center">
+        <div id='pacypay_checkout'></div>
+        <n-button class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>
+      </div>
       <!--            两方支付-->
       <card-payment :data="products" />
       <!--      本地支付-->
