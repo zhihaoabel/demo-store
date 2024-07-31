@@ -69,6 +69,8 @@ export default defineComponent({
   components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
   
   setup(props) {
+    const currentRoute = router.currentRoute.value.name
+    const afterpayAvailable = currentRoute === 'afterpay'
     const currency = useCurrencyStore()
     const key = ref(0)
     const supportedPayments = ref(currency.getSupportedPayments())
@@ -225,7 +227,6 @@ export default defineComponent({
     
     const order = async () => {
       const req: object = await placeSubscriptionOrder(totalPrice.toString())
-      console.log(req, 'request')
       return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -285,7 +286,9 @@ export default defineComponent({
       }
       
       // todo: 1.Onerway js-sdk收银台
-      await pullUpSDK()
+      if (!afterpayAvailable) {
+        await pullUpSDK()
+      }
     })
     
     function handleSubmit() {
@@ -314,7 +317,9 @@ export default defineComponent({
       products,
       totalPrice,
       pacypay,
-      handleSubmit
+      handleSubmit,
+      currentRoute,
+      afterpayAvailable
     }
   },
   
@@ -582,9 +587,8 @@ export default defineComponent({
             header-class="flex-col"
             header-extra-class="w-full"
             size="large"
-            title=" "
-    >
-      <template #header-extra>
+            title=" ">
+      <template v-if="!afterpayAvailable" #header-extra>
         <div class="google-pay-button-container flex-col w-full mt-4">
           <div id="google-container" class="google-apple-pay-container ">
           </div>

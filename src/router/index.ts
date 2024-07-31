@@ -26,6 +26,11 @@ export const routes = [
         component: () => import('../views/ProductDetailView.vue')
       },
       {
+        path: '/afterpay',
+        name: 'afterpay',
+        component: () => import('../views/AfterpayView.vue')
+      },
+      {
         path: '/checkout',
         name: 'checkout',
         component: () => import('../views/CheckoutView.vue')
