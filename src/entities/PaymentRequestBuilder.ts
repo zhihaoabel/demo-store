@@ -110,6 +110,11 @@ class PaymentRequestBuilder {
     return this
   }
 
+  setSubscription(subscription: any) {
+    this.requestParams.subscription = subscription
+    return this
+  }
+
   build() {
     return this.requestParams
   }

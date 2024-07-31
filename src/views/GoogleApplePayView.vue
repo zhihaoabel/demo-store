@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
 import '../utils/pacypay-ga.js'
-import { placeOrder, placeOrder2 } from '@/utils/payment-request.js'
+import { placeDirectOrder, placeGoogleAppleOrder } from '@/utils/payment-request.js'
 import api from '@/utils/api.js'
 
 export default defineComponent({
@@ -49,7 +49,7 @@ export default defineComponent({
     }
     
     const order = async () => {
-      const req: object = await placeOrder2('10')
+      const req: object = await placeGoogleAppleOrder('10')
       return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {

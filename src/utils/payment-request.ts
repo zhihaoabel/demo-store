@@ -120,6 +120,47 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   return JSON.stringify(txnOrderMsg)
 }
 
+/**
+ * 构建订阅信息
+ * @param merchantCustId
+ * @param requestType
+ * @param expireDate
+ * @param frequencyType
+ * @param frequencyPoint
+ */
+export async function buildSubscriptionInfo(merchantCustId: string = '', requestType: number = 0, expireDate: string = '2030-12-31', frequencyType: string = 'D', frequencyPoint: number = 1) {
+  const subscriptionInfo = {} as { [key: string]: string | number }
+  subscriptionInfo['merchantCustId'] = merchantCustId ? merchantCustId : await generateCustId()
+  subscriptionInfo['requestType'] = requestType
+  subscriptionInfo['expireDate'] = expireDate
+  subscriptionInfo['frequencyType'] = frequencyType
+  subscriptionInfo['frequencyPoint'] = frequencyPoint
+
+  return JSON.stringify(subscriptionInfo)
+}
+
+async function createSubscriptionRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
+  const request = new PaymentRequestBuilder()
+    .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
+    .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantTxnId(buildMerchantTxnId())
+    .setMerchantTxnTime(buildMerchantTxnTime())
+    .setMerchantTxnTimeZone('+08:00')
+    .setOrderAmount(amount)
+    .setOrderCurrency(currency)
+    .setProductType(productType)
+    .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
+    .setSign('')
+    .setSubProductType('SUBSCRIBE')
+    .setSubscription(await buildSubscriptionInfo())
+    .setTxnType('SALE')
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
 async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
@@ -187,17 +228,25 @@ async function createTokenPaymentBuilder(country: string, phone: string, amount:
 }
 
 /**
- * 下单接口
+ * 下单接口 —— 直接支付
  * @param amount 金额
  */
-export function placeOrder(amount: string) {
+export function placeDirectOrder(amount: string) {
   return createPaymentRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
+}
+
+/**
+ * 下单接口 —— 订阅支付
+ * @param amount 金额
+ */
+export function placeSubscriptionOrder(amount: string) {
+  return createSubscriptionRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
 }
 
 /**
  * Google Apple Pay 下单
  */
-export function placeOrder2(amount: string) {
+export function placeGoogleAppleOrder(amount: string) {
   return createPaymentRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
 }
 

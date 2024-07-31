@@ -38,7 +38,7 @@ import {
   payU,
   permata,
   pix,
-  placeOrder,
+  placeDirectOrder, placeSubscriptionOrder,
   poli,
   przelewy24,
   qris,
@@ -106,13 +106,23 @@ export default defineComponent({
     const options: object = {
       container: 'pacypay_checkout',
       onPaymentCompleted: async (res: any) => {
-        console.log('onPaymentCompleted', res)
+        console.log('成功了')
         const respCode = res.respCode
         const respMsg = res.respMsg
+        const txtInfo = res.data
         if (respCode === '20000') {
-          setTimeout(() => {
-            router.push({ name: 'success', query: { status: '0' } })
-          }, 1000)
+          switch (txtInfo.status) { // 交易状态判断
+            case 'S': // status 为 'S' 表示成功
+              // 支付最终状态以异步通知结果为准
+              setTimeout(() => {
+                router.push({ name: 'success', query: { status: '0' } })
+              }, 1000)
+              break;
+            case 'R': // status 为 'R' 表示需要3ds验证
+              // 当交易状态为 R 时，商户需要重定向到该URL完成部分交易，包括3ds验证
+              window.location.href = txtInfo.redirectUrl;
+              break;
+          }
         } else {
           message.error(respMsg, {
             closable: true,
@@ -121,23 +131,21 @@ export default defineComponent({
           await pullUpSDK()
         }
       },
-      onError: async function() {
-        console.log('onError')
+      onError: async function(err: any) {
+        console.log('Payment failed', err)
         //支付异常回调方法
         await pullUpSDK()
       },
-      onFinished: async function() {
-        console.log('onFinished')
-        // 支付完成（不管成功或失败）回调方法
-      },
-      locale: 'en',
+      // locale: 'en',
       environment: 'sandbox',
+      mode: 'CARD', // CARD、GooglePay、ApplePay
       config: {
         subProductType: 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
         showPayButton: true,
+        displayBillingInformation: false,
         variables: {
           'colorBackground': 'white', // 主题背景色
           'colorPrimary': '#727272', // 主题色，如输入框高亮、光标颜色
@@ -216,7 +224,8 @@ export default defineComponent({
     }
     
     const order = async () => {
-      const req: object = await placeOrder(totalPrice.toString())
+      const req: object = await placeSubscriptionOrder(totalPrice.toString())
+      console.log(req, 'request')
       return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -244,7 +253,7 @@ export default defineComponent({
         return
       }
       // Onerway 收银台
-      // new Pacypay(txnId, options)
+      pacypay.value = new Pacypay(txnId, options)
     }
     
     const renderMessage: MessageRenderMessage = (props) => {
@@ -275,13 +284,12 @@ export default defineComponent({
         onGooglePayLoaded()
       }
       
-      console.log('收银台拉起')
       // todo: 1.Onerway js-sdk收银台
-      // const txnId = await order()
-      pacypay.value = new Pacypay('1811645628628209664', options)
+      await pullUpSDK()
     })
     
     function handleSubmit() {
+      console.log('执行自定义支付方法')
       pacypay.value.submit()
     }
     
@@ -291,6 +299,7 @@ export default defineComponent({
     })
     
     return {
+      options,
       supportedPayments,
       key,
       showSpin,
@@ -587,7 +596,7 @@ export default defineComponent({
       <!--   todo:  2.js-sdk收银台渲染-->
       <div class="onerway-payments-container flex-col items-center">
         <div id='pacypay_checkout'></div>
-        <n-button class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>
+        <n-button v-if="!options.config.showPayButton" class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>
       </div>
       <!--            两方支付-->
       <card-payment :data="products" />
