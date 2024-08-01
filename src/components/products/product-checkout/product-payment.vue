@@ -7,6 +7,7 @@ import '@/utils/onerway'
 import { useCurrencyStore } from '@/stores/currency'
 import IconRedirect from '@/components/icons/IconRedirect.vue'
 import {
+  afterpay,
   alipay_plus,
   bancontact,
   bankTransfer,
@@ -57,11 +58,11 @@ import {
 import api from '@/utils/api'
 import type { MessageRenderMessage } from 'naive-ui'
 import { NAlert, useMessage } from 'naive-ui'
-import router from '@/router'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
 import CardPayment from '@/components/payments/card-payment.vue'
 import type { Product } from '@/entities/Product'
+import { useRouter } from 'vue-router'
 
 
 export default defineComponent({
@@ -69,11 +70,12 @@ export default defineComponent({
   components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
   
   setup(props) {
+    const router = useRouter()
     const currentRoute = router.currentRoute.value.name
     const afterpayAvailable = currentRoute === 'afterpay'
     const currency = useCurrencyStore()
     const key = ref(0)
-    const supportedPayments = ref(currency.getSupportedPayments())
+    const supportedPayments = afterpayAvailable ? ref(['Afterpay']) : ref(currency.getSupportedPayments())
     const currentCountry = ref('')
     const showSpin = ref(false)
     const qrCode = ref('')
@@ -297,7 +299,7 @@ export default defineComponent({
     }
     
     watch(() => currency.currency, () => {
-      supportedPayments.value = currency.getSupportedPayments()
+      supportedPayments.value = afterpayAvailable ? ['Afterpay'] : currency.getSupportedPayments()
       currentCountry.value = currency.getCountry()
     })
     
@@ -466,6 +468,9 @@ export default defineComponent({
     payNowHandler() {
       return payNow(this.totalPrice.toString())
     },
+    afterpayHandler() {
+      return afterpay(this.totalPrice.toString())
+    },
     
     getPaymentHandler(payment: string) {
       const handlers: { [key: string]: any } = {
@@ -513,7 +518,8 @@ export default defineComponent({
         'Eleven': this.elevenHandler,
         'Przelewy24': this.przelewy24Handler,
         'BLIK_SEAMLESS': this.blikSeamlessHandler,
-        'PayNow': this.payNowHandler
+        'PayNow': this.payNowHandler,
+        'Afterpay': this.afterpayHandler
       }
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
@@ -603,7 +609,7 @@ export default defineComponent({
         <n-button v-if="!options.config.showPayButton" class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>
       </div>
       <!--            两方支付-->
-      <card-payment :data="products" />
+      <card-payment v-if="!afterpayAvailable" :data="products" />
       <!--      本地支付-->
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"

@@ -3,8 +3,8 @@ import { defineComponent, type PropType } from 'vue'
 import { Product } from '@/entities/Product'
 import { useCurrencyStore } from '@/stores/currency'
 import IconShoppingCart from '@/components/icons/IconShoppingCart.vue'
-import router from '@/router'
 import { useCartStore } from '@/stores/cart'
+import { useRoute, useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'ProductDetailDescription',
@@ -17,27 +17,32 @@ export default defineComponent({
     }
   },
   
-  setup(props) {
+  setup() {
     const currency = useCurrencyStore()
     const cart = useCartStore()
-    
-    function clickHandler() {
-      // 直接下单需要给这个 directOrderProduct 赋值
-      cart.directOrderProduct = props.product
-      cart.directOrderProduct.quantity = 1
-      // 保存 directOrderProduct 到 localStorage
-      localStorage.setItem('directOrderProduct', JSON.stringify(cart.directOrderProduct))
-      // 跳转到 checkout 页面
-      // router.hasRoute('checkout') && router.push({ name: 'checkout', query: { date: new Date().getTime() } })
-      router.hasRoute('afterpay') && router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
-    }
+    const route = useRoute()
+    const router = useRouter()
     
     function handleAddProduct(product: Product) {
       cart.addProduct(product)
     }
     
     return {
-      currency, clickHandler, handleAddProduct
+      cart, currency, handleAddProduct,route, router
+    }
+  },
+  
+  methods: {
+    clickHandler() {
+      // 直接下单需要给这个 directOrderProduct 赋值
+      this.cart.directOrderProduct = this.product
+      this.cart.directOrderProduct.quantity = 1
+      // 保存 directOrderProduct 到 localStorage
+      localStorage.setItem('directOrderProduct', JSON.stringify(this.cart.directOrderProduct))
+      // 跳转到 checkout 页面
+      // this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      // 跳到 afterpay 页面
+      this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
     }
   }
 })

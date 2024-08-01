@@ -1,11 +1,12 @@
 <script lang="ts">
-import { defineComponent, onBeforeMount, type Ref, ref, type UnwrapRef } from 'vue'
+import { defineComponent, onBeforeMount, onUnmounted, type Ref, ref, type UnwrapRef, watch } from 'vue'
 import { Product } from '@/entities/Product'
 import { useCurrencyStore } from '@/stores/currency'
 import { useRoute } from 'vue-router'
 import ProductDetailHeader from '@/components/products/product-detail/product-detail-header.vue'
 import ProductDetailDescription from '@/components/products/product-detail/product-detail-description.vue'
 import ProductDetailRecommendations from '@/components/products/product-detail/product-detail-recommendations.vue'
+import router from '@/router'
 
 export default defineComponent({
   name: 'ProductDetailView',

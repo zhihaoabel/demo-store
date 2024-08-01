@@ -442,6 +442,10 @@ export function payNow(amount: string) {
   return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122')
 }
 
+export function afterpay(amount: string) {
+  return createPaymentRequestBuilder('Afterpay', 'US', '8522847035', amount, 'USD', '86258406122')
+}
+
 export async function bindToken(cardNumber: string, cvv: string, month: string, year: string, cardHolder: string, ip: any) {
   const cardInfo = buildCardInfo(cardNumber, cvv, month, year, cardHolder)
   const request = new PaymentRequestBuilder()

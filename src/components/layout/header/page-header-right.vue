@@ -1,5 +1,12 @@
 <template>
   <div class="header-right-container flex items-center justify-around ">
+    <n-button class="mr-2" text>
+      <n-icon size="20">
+        <icon-carbon />
+      </n-icon>
+      <span class="ml-2">Orders</span>
+    </n-button>
+    <span class="mx-2">|</span>
     <n-popselect
       id="currency"
       v-model:value="currency.currency"
@@ -34,11 +41,14 @@ import { useCartStore } from '@/stores/cart'
 import type { Product } from '@/entities/Product'
 import ProductCart from '@/components/products/product-cart/product-cart.vue'
 import { useShowStore } from '@/stores/show'
+import { useRouter } from 'vue-router'
+import IconCarbon from '@/components/icons/IconCarbon.vue'
 
 export default defineComponent({
   name: 'PageHeaderRight',
-  components: { ProductCart, IconCart },
+  components: { IconCarbon, ProductCart, IconCart },
   setup(props, ctx) {
+    const router = useRouter()
     const currency = useCurrencyStore()
     const cart = useCartStore()
     const show = useShowStore()
@@ -48,7 +58,7 @@ export default defineComponent({
     products.value = cart.cart.products
     
     return {
-      props, ctx, currency, cart, cartAmount, products, show
+      props, ctx, currency, cart, cartAmount, products, show, router
     }
   },
   

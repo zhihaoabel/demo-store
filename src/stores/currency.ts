@@ -60,7 +60,7 @@ export const useCurrencyStore = defineStore('currency', {
       SEK: ['iDEAL', 'Trustly'],
       SGD: ['PayNow', 'GrabPay'],
       THB: ['Kakao_Pay', 'TrueMoney Wallet', 'Rabbit_Line_pay', 'PromptPay', 'KRUNGSRI_ONLINE', 'BUALUANG_IBANKING', 'CITI_POINTS', 'K_PLUS'],
-      USD: ['Alipay+', 'Kakao_Pay', 'Boleto', 'Bank Transfer', 'MercadoPago', 'PIX', 'Servipag', 'Sencillito', 'Webpay', 'Multicaja', 'Efecty', 'SPEI', 'OXXO', 'OXXOPAY', 'PagoEfectivo', 'safetypay-cash', 'safetypay-online', 'Pagosnet', 'iDEAL', 'Skrill', ],
+      USD: ['Alipay+', 'Kakao_Pay', 'Boleto', 'Bank Transfer', 'MercadoPago', 'PIX', 'Servipag', 'Sencillito', 'Webpay', 'Multicaja', 'Efecty', 'SPEI', 'OXXO', 'OXXOPAY', 'PagoEfectivo', 'safetypay-cash', 'safetypay-online', 'Pagosnet', 'iDEAL', 'Skrill', 'Afterpay'],
       VND: ['VIET_QR', 'ATM_CARD', 'PAYME', 'MOMO']
     } as { [key: string]: string[] },
     country: {
