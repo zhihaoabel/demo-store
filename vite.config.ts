@@ -131,10 +131,10 @@ export default defineConfig({
     })
   ],
   server: {
-    port: 80,
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'https://sandbox-v3-acquiring.pacypay.com',
+        target: 'https://sandbox-acq.onerway.com',
         rewrite(path) {
           return path.replace(/^\/api/, "")
         },

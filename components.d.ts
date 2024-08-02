@@ -37,6 +37,7 @@ declare module 'vue' {
     IconSupport: typeof import('./src/components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./src/components/icons/IconTooling.vue')['default']
     IconTrash: typeof import('./src/components/icons/IconTrash.vue')['default']
+    IconVisa: typeof import('./src/components/icons/IconVisa.vue')['default']
     IconWarning: typeof import('./src/components/icons/IconWarning.vue')['default']
     NBadge: typeof import('naive-ui')['NBadge']
     NButton: typeof import('naive-ui')['NButton']

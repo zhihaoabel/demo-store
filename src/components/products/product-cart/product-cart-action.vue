@@ -1,13 +1,14 @@
 <script lang="ts">
 import { defineComponent, type Ref, ref } from 'vue'
 import { useShowStore } from '@/stores/show'
-import router from '@/router'
 import type { Product } from '@/entities/Product'
 import { useCartStore } from '@/stores/cart'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'ProductCartAction',
   setup(props, ctx) {
+    const router = useRouter()
     const show = useShowStore()
     const cart = useCartStore()
     const showCart = ref<boolean>(show.showCart)

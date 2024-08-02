@@ -54,6 +54,11 @@ export const routes = [
         path: '/ga',
         name: 'google-apple-pay',
         component: () => import('@/views/GoogleApplePayView.vue')
+      },
+      {
+        path: '/order',
+        name: 'order',
+        component: () => import('@/views/OrderView.vue')
       }
     ]
   }

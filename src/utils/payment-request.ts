@@ -2,10 +2,12 @@ import { useCurrencyStore } from '@/stores/currency'
 import { fakerEN_CA, fakerEN_US, fakerZH_CN } from '@faker-js/faker'
 import PaymentRequestBuilder from '@/entities/PaymentRequestBuilder'
 import { generateSign } from '@/utils/sign'
-import { generateCustId } from '@/utils/util'
+import { generateCurrentTime, generateCustId } from '@/utils/util'
+import { QueryBuilder } from '@/entities/QueryBuilder'
+import { RefundBuilder } from '@/entities/RefundBuilder'
 
-const APP_ID = '1727880846378401792'
-const MERCHANT_NO = '800209'
+const APP_ID = '1818554971727462400'
+const MERCHANT_NO = '800325'
 const CUST_ID = '730850210551402496'
 const currency = useCurrencyStore()
 
@@ -161,6 +163,29 @@ async function createSubscriptionRequestBuilder(lpmsInfo: string, country: strin
   return request
 }
 
+async function createSDKTokenRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
+  const request = new PaymentRequestBuilder()
+    .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
+    .setMerchantCustId(await generateCustId())
+    .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantTxnId(buildMerchantTxnId())
+    .setMerchantTxnTime(buildMerchantTxnTime())
+    .setMerchantTxnTimeZone('+08:00')
+    .setOrderAmount(amount)
+    .setOrderCurrency(currency)
+    .setProductType(productType)
+    .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
+    .setSign('')
+    .setSubProductType('TOKEN')
+    .setSubscription(await buildSubscriptionInfo())
+    .setTxnType('SALE')
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
 async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
@@ -227,12 +252,66 @@ async function createTokenPaymentBuilder(country: string, phone: string, amount:
   return request
 }
 
+async function createQueryBuilder(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = []) {
+  const request = new QueryBuilder()
+    .setCurrent(current)
+    .setEndTime(generateCurrentTime())
+    .setMerchantNo(MERCHANT_NO)
+    .setMerchantTxnIds(merchantTxnIds)
+    .setSign('')
+    .setStartTime(startTime)
+    .setTransactionIds(transactionIds)
+    .setTxnTypes(txnTypes)
+    .build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
+async function createRefundBuilder(merchantNo: string, refundType: string, merchantTxnId: string, originTransactionId: string, refundAmount: string) {
+  const request = new RefundBuilder()
+    .setMerchantNo(merchantNo)
+    .setRefundType(refundType)
+    .setMerchantTxnId(merchantTxnId)
+    .setOriginTransactionId(originTransactionId)
+    .setRefundAmount(refundAmount)
+    .setSign('')
+    .build()
+
+  request['sign'] = await generateSign(request, [])
+  return request
+}
+
+/**
+ * 申请退款接口
+ * @param merchantNo 商户号
+ * @param refundType 退款类型 0 —— 退款；1 —— 取消退款
+ * @param merchantTxnId 商户订单号
+ * @param originTransactionId 原交易订单号
+ * @param refundAmount 退款金额
+ */
+export async function refund(merchantNo: string = MERCHANT_NO, refundType: string = '0', merchantTxnId: string, originTransactionId: string, refundAmount: string) {
+  return await createRefundBuilder(merchantNo, refundType, merchantTxnId, originTransactionId, refundAmount)
+}
+
+export async function queryTransaction(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = []) {
+  return await createQueryBuilder(current, merchantTxnIds, startTime, transactionIds, txnTypes)
+}
+
 /**
  * 下单接口 —— 直接支付
  * @param amount 金额
  */
 export function placeDirectOrder(amount: string) {
   return createPaymentRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
+}
+
+/**
+ * 下单接口 —— 直接支付
+ * @param amount 金额
+ */
+export function placeTokenOrder(amount: string) {
+  return createSDKTokenRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
 }
 
 /**

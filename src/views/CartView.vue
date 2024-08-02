@@ -5,13 +5,14 @@ import { useCurrencyStore } from '@/stores/currency'
 import type { Product } from '@/entities/Product'
 import { useCartStore } from '@/stores/cart'
 import { useShowStore } from '@/stores/show'
-import router from '@/router'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'CartView',
   components: {},
   
   setup(props, ctx) {
+    const router = useRouter()
     const value = ref(1)
     const currency = useCurrencyStore()
     const show = useShowStore()
@@ -176,7 +177,8 @@ export default defineComponent({
     
     const checkout = () => {
       cart.directOrderProduct = {} as Product
-      router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      // router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
     }
     
     return { props, ctx, value, cols: createColumns(), currency, createSummary, checkout, cart }

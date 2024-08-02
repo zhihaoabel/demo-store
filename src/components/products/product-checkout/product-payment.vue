@@ -39,7 +39,7 @@ import {
   payU,
   permata,
   pix,
-  placeDirectOrder, placeSubscriptionOrder,
+  placeTokenOrder,
   poli,
   przelewy24,
   qris,
@@ -121,11 +121,11 @@ export default defineComponent({
               setTimeout(() => {
                 router.push({ name: 'success', query: { status: '0' } })
               }, 1000)
-              break;
+              break
             case 'R': // status 为 'R' 表示需要3ds验证
               // 当交易状态为 R 时，商户需要重定向到该URL完成部分交易，包括3ds验证
-              window.location.href = txtInfo.redirectUrl;
-              break;
+              window.location.href = txtInfo.redirectUrl
+              break
           }
         } else {
           message.error(respMsg, {
@@ -144,7 +144,7 @@ export default defineComponent({
       environment: 'sandbox',
       mode: 'CARD', // CARD、GooglePay、ApplePay
       config: {
-        subProductType: 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
+        subProductType: 'TOKEN', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
@@ -228,7 +228,7 @@ export default defineComponent({
     }
     
     const order = async () => {
-      const req: object = await placeSubscriptionOrder(totalPrice.toString())
+      const req: object = await placeTokenOrder(totalPrice.toString())
       return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -606,7 +606,9 @@ export default defineComponent({
       <!--   todo:  2.js-sdk收银台渲染-->
       <div class="onerway-payments-container flex-col items-center">
         <div id='pacypay_checkout'></div>
-        <n-button v-if="!options.config.showPayButton" class="w-full bg-slate-950 text-gray-50 rounded" @click="handleSubmit">Submit</n-button>
+        <n-button v-if="!options.config.showPayButton" class="w-full bg-slate-950 text-gray-50 rounded"
+                  @click="handleSubmit">Submit
+        </n-button>
       </div>
       <!--            两方支付-->
       <card-payment v-if="!afterpayAvailable" :data="products" />
@@ -614,6 +616,9 @@ export default defineComponent({
       <n-collapse accordion class="mt-4">
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
                          :title="payment">
+          <template #header-extra>
+              <img alt="Afterpay" src="@/assets/cards/afterpay.png" />
+          </template>
           <div class="redirect-payment-container px-6 flex flex-col justify-center items-center">
             <n-spin :show="showSpin">
               <div v-if="!(showQrCode)" class="icon-description flex flex-col items-center">

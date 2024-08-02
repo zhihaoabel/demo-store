@@ -1,10 +1,10 @@
 <template>
   <div class="header-right-container flex items-center justify-around ">
-    <n-button class="mr-2" text>
+    <n-button class="mr-2" text @click="handleOrder">
       <n-icon size="20">
         <icon-carbon />
       </n-icon>
-      <span class="ml-2">Orders</span>
+      <span class="ml-2">My Order</span>
     </n-button>
     <span class="mx-2">|</span>
     <n-popselect
@@ -65,6 +65,10 @@ export default defineComponent({
   methods: {
     handleSelect() {
       this.show.toggleShowCart()
+    },
+    
+    handleOrder() {
+      this.router.push({ name: 'order' })
     }
   },
   
