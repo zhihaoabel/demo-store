@@ -9,7 +9,7 @@ import mastercard from '@/assets/cards/mastercard.svg'
 import amex from '@/assets/cards/american-express.svg'
 import discover from '@/assets/cards/discover.svg'
 import diner from '@/assets/cards/diners.png'
-import { bindToken, directCard, payByTokenId, queryToken } from '@/utils/payment-request'
+import { bindToken, directCard, payByTokenId, prefix, queryToken } from '@/utils/payment-request'
 import api from '@/utils/api'
 import { useDialog, useMessage, useModal } from 'naive-ui'
 import router from '@/router'
@@ -150,7 +150,7 @@ export default defineComponent({
     async function queryCardList() {
       const request = await queryToken()
       
-      return api.post('/api/v1/txn/queryTokenList', request).then((res: any) => {
+      return api.post(`${prefix}/v1/txn/queryTokenList`, request).then((res: any) => {
         const { respCode, respMsg, data } = res
         if (respCode === '20000' && respMsg === 'Success') {
           return data['tokenInfos']
@@ -380,7 +380,7 @@ export default defineComponent({
         const request = await this.buildBindCard(cardInfo)
         
         // 调用绑卡接口 /v1/txn/bindCard
-        api.post('/api/v1/txn/bindCard', request).then((res: any) => {
+        api.post(`${prefix}/v1/txn/bindCard`, request).then((res: any) => {
           const { respCode, respMsg } = res
           if (respCode === '20000' && respMsg === 'Success') {
             this.showAddButton = true
@@ -402,7 +402,7 @@ export default defineComponent({
         const request = await this.buildDirectPayment(cardInfo)
         
         // 调用信用卡支付接口 /v1/txn/doTransaction
-        api.post('/api/v1/txn/doTransaction', request).then((res: any) => {
+        api.post(`${prefix}/v1/txn/doTransaction`, request).then((res: any) => {
           const { respCode, respMsg } = res
           if (respCode === '20000' && respMsg === 'Success') {
             router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })
@@ -468,7 +468,7 @@ export default defineComponent({
       
       const request = await payByTokenId(tokenId, this.totalPrice.toString())
       
-      api.post('/api/v1/txn/doTransaction', request).then((res: any) => {
+      api.post(`${prefix}/v1/txn/doTransaction`, request).then((res: any) => {
         const { respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
           router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })

@@ -18,7 +18,6 @@ export default defineComponent({
   <n-layout-footer class="">
     <div class="text-center flex justify-center">
       <div class="flex flex-col justify-center">
-        <img src="@/assets/cards/afterpay.png" alt="Afterpay"/>
         <span>© {{year}}. All rights reserved.</span>
       </div>
     </div>

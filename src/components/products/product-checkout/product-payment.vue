@@ -40,7 +40,7 @@ import {
   permata,
   pix,
   placeTokenOrder,
-  poli,
+  poli, prefix,
   przelewy24,
   qris,
   safetypay_cash,
@@ -229,7 +229,7 @@ export default defineComponent({
     
     const order = async () => {
       const req: object = await placeTokenOrder(totalPrice.toString())
-      return api.post('api/v1/sdkTxn/doTransaction', req).then((res: any) => {
+      return api.post(`${prefix}/v1/sdkTxn/doTransaction`, req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
           return data['transactionId']
@@ -537,7 +537,7 @@ export default defineComponent({
       const data = await handler()
       
       // 发起支付请求
-      api.post('api/v1/txn/doTransaction', data).then((res: any) => {
+      api.post(`${prefix}/v1/txn/doTransaction`, data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
         
@@ -617,7 +617,7 @@ export default defineComponent({
         <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
                          :title="payment">
           <template #header-extra>
-              <img alt="Afterpay" src="@/assets/cards/afterpay.png" />
+            <!--              todo: 支付icon-->
           </template>
           <div class="redirect-payment-container px-6 flex flex-col justify-center items-center">
             <n-spin :show="showSpin">

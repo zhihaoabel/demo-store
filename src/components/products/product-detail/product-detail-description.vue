@@ -40,9 +40,9 @@ export default defineComponent({
       // 保存 directOrderProduct 到 localStorage
       localStorage.setItem('directOrderProduct', JSON.stringify(this.cart.directOrderProduct))
       // 跳转到 checkout 页面
-      // this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
       // 跳到 afterpay 页面
-      this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
+      // this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
     }
   }
 })

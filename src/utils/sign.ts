@@ -1,4 +1,4 @@
-const APP_SECRET = 'bd938a10cd954223bab76a63939bd458'
+const APP_SECRET = '59c5b49a58c74340b28ecc68004e815a'
 
 /**
  * Generates a sign for the given `requestBody`.

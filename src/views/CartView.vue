@@ -177,8 +177,8 @@ export default defineComponent({
     
     const checkout = () => {
       cart.directOrderProduct = {} as Product
-      // router.push({ name: 'checkout', query: { date: new Date().getTime() } })
-      router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
+      router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      // router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
     }
     
     return { props, ctx, value, cols: createColumns(), currency, createSummary, checkout, cart }

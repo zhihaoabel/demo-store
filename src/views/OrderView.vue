@@ -2,7 +2,7 @@
 import { defineComponent, h, onMounted, reactive, ref } from 'vue'
 import type { Transaction } from '@/entities/Transaction'
 import { type DataTableColumns, NButton, useMessage } from 'naive-ui'
-import { queryTransaction, refund } from '@/utils/payment-request'
+import { prefix, queryTransaction, refund } from '@/utils/payment-request'
 import api from '@/utils/api'
 import { generateCurrentDate } from '@/utils/util'
 
@@ -109,7 +109,7 @@ export default defineComponent({
     const orderQuery = async () => {
       const req = await queryTransaction(currentPage.value, [], `${generateCurrentDate()} 00:00:00`)
       
-      api.post('/api/v1/txn/list', req).then((res) => {
+      api.post(`${prefix}/v1/txn/list`, req).then((res) => {
         const data: any[] = res.data.content
         count.value = res.data.totalElements
         size.value = res.data.totalPages
@@ -124,7 +124,7 @@ export default defineComponent({
     const transactionRefund = async (txn: Transaction) => {
       const request = await refund(undefined, '0', '', txn.txnId, txn.amount)
       
-      api.post('/api/v1/txn/onlineRefund', request).then((res: any) => {
+      api.post(`${prefix}/v1/txn/onlineRefund`, request).then((res: any) => {
         const { respCode, respMsg } = res
         if (respCode === '20000') {
           message.success('Refund success')

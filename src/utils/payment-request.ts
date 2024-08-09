@@ -6,10 +6,11 @@ import { generateCurrentTime, generateCustId } from '@/utils/util'
 import { QueryBuilder } from '@/entities/QueryBuilder'
 import { RefundBuilder } from '@/entities/RefundBuilder'
 
-const APP_ID = '1818554971727462400'
-const MERCHANT_NO = '800325'
+const APP_ID = '1727880846378401792'
+const MERCHANT_NO = '800209'
 const CUST_ID = '730850210551402496'
 const currency = useCurrencyStore()
+export const prefix = 'api'
 
 /**
  * 构建账单信息
