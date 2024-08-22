@@ -33,7 +33,8 @@ export default defineComponent({
   },
   
   methods: {
-    clickHandler() {
+    // 点击支付
+    handlePayment() {
       // 直接下单需要给这个 directOrderProduct 赋值
       this.cart.directOrderProduct = this.product
       this.cart.directOrderProduct.quantity = 1
@@ -73,7 +74,7 @@ export default defineComponent({
         <n-button
           class="flex items-center bg-slate-900 text-white px-4 py-2 w-full mt-4"
           round
-          @click="clickHandler">
+          @click="handlePayment">
           <span class="cart-btn">Buy Now</span>
         </n-button>
       </div>

@@ -42,7 +42,14 @@ export default defineConfig({
             // default imports
             ['default', 'axios'] // import { default as axios } from 'axios',
           ],
-          'naive-ui': [],
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar',
+            'NButton',
+            'NCard',
+          ],
           '[package-name]': [
             '[import-names]',
             // alias
