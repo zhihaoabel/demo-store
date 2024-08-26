@@ -289,7 +289,7 @@ export default defineComponent({
       
       // todo: 1.Onerway js-sdk收银台
       if (!afterpayAvailable) {
-        await pullUpSDK()
+        // await pullUpSDK()
       }
     })
     
