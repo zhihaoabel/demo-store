@@ -39,6 +39,7 @@ import {
   payU,
   permata,
   pix,
+  placeDirectOrder,
   placeTokenOrder,
   poli, prefix,
   przelewy24,
@@ -144,7 +145,7 @@ export default defineComponent({
       environment: 'sandbox',
       mode: 'CARD', // CARD、GooglePay、ApplePay
       config: {
-        subProductType: 'TOKEN', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
+        subProductType: 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
@@ -228,7 +229,7 @@ export default defineComponent({
     }
     
     const order = async () => {
-      const req: object = await placeTokenOrder(totalPrice.toString())
+      const req: object = await placeDirectOrder(totalPrice.toString())
       return api.post(`${prefix}/v1/sdkTxn/doTransaction`, req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -289,7 +290,7 @@ export default defineComponent({
       
       // todo: 1.Onerway js-sdk收银台
       if (!afterpayAvailable) {
-        // await pullUpSDK()
+        await pullUpSDK()
       }
     })
     
