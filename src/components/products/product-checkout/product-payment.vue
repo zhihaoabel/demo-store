@@ -69,7 +69,7 @@ import { useRouter } from 'vue-router'
 export default defineComponent({
   name: 'ProductPayment',
   components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
-  
+
   setup(props) {
     const router = useRouter()
     const currentRoute = router.currentRoute.value.name
@@ -107,11 +107,13 @@ export default defineComponent({
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
     const pacypay = ref<any>(null)
-    
+    const gapay = ref<any>(null)
+
+
+    // 信用卡支付
     const options: object = {
       container: 'pacypay_checkout',
       onPaymentCompleted: async (res: any) => {
-        console.log('成功了')
         const respCode = res.respCode
         const respMsg = res.respMsg
         const txtInfo = res.data
@@ -227,7 +229,52 @@ export default defineComponent({
         }
       }
     }
-    
+
+    // google apple pay 支付
+    const gaOptions = {
+      container: 'ga_container', // 按钮嵌入的容器
+      locale: "zh", // 支持语言
+      environment: 'sandbox', // sandbox、production
+      mode: 'GooglePay', // GooglePay、ApplePay
+      config: {
+        googlePayButtonType: 'buy', // 'book' | 'buy' | 'checkout' | 'donate' | 'order' | 'pay' | 'plain' | 'subscribe'
+        googlePayButtonColor: 'black', // 'black' | 'white'
+        googlePayEnvironment: 'TEST', // TEST PRODUCTION
+        buttonWidth: '100%', // 按钮宽度
+        buttonHeight: '40px', // 按钮高度
+        buttonRadius: '4px', // 按钮圆角边框
+      },
+      onPaymentCompleted: async function (res: any) { // 成功支付后回调方法
+        const txtInfo = res.data; // 返回交易结果详情
+        const respCode = res.respCode; // 响应码
+        const respMsg = res.respMsg; // 响应信息
+        if (respCode === '20000') {
+          switch (txtInfo.status) { // 交易状态判断
+            case 'S': // status 为 'S' 表示成功
+              // 支付最终状态以异步通知结果为准
+              setTimeout(() => {
+                router.push({ name: 'success', query: { status: '0' } })
+              }, 1000)
+              break
+            case 'R': // status 为 'R' 表示需要3ds验证
+              // 当交易状态为 R 时，商户需要重定向到该URL完成部分交易，包括3ds验证
+              window.location.href = txtInfo.redirectUrl
+              break
+          }
+        } else {
+          message.error(respMsg, {
+            closable: true,
+            duration: 5000
+          })
+          await pullUpSDK()
+        }
+      },
+      onError: function (err: any) {
+        //支付异常回调方法
+        console.log('res', err);
+      }
+    }
+
     const order = async () => {
       const req: object = await placeDirectOrder(totalPrice.toString())
       return api.post(`${prefix}/v1/sdkTxn/doTransaction`, req).then((res: any) => {
@@ -241,7 +288,7 @@ export default defineComponent({
         console.log(err)
       })
     }
-    
+
     const createMessage = () => {
       message.error('Failed to place an order. Please contact support for assistance.',
         {
@@ -249,17 +296,19 @@ export default defineComponent({
           duration: 5000
         })
     }
-    
+
     const pullUpSDK = async () => {
       const txnId = await order()
+      // const txnId = '1829398755775221760'
       if (!txnId) {
         createMessage()
         return
       }
       // Onerway 收银台
       pacypay.value = new Pacypay(txnId, options)
+      gapay.value = new Pacypay(txnId, gaOptions)
     }
-    
+
     const renderMessage: MessageRenderMessage = (props) => {
       const { type } = props
       return h(NAlert, {
@@ -276,34 +325,34 @@ export default defineComponent({
         default: () => props.content
       })
     }
-    
+
     onMounted(async () => {
-      // 渲染 Google pay按钮
+      // 渲染自己的 Google pay按钮
       const script = document.createElement('script')
       script.src = 'https://pay.google.com/gp/p/js/pay.js'
       script.async = true
       document.head.appendChild(script)
-      
+
       script.onload = () => {
-        onGooglePayLoaded()
+        // onGooglePayLoaded()
       }
-      
+
       // todo: 1.Onerway js-sdk收银台
       if (!afterpayAvailable) {
         await pullUpSDK()
       }
     })
-    
+
     function handleSubmit() {
       console.log('执行自定义支付方法')
       pacypay.value.submit()
     }
-    
+
     watch(() => currency.currency, () => {
       supportedPayments.value = afterpayAvailable ? ['Afterpay'] : currency.getSupportedPayments()
       currentCountry.value = currency.getCountry()
     })
-    
+
     return {
       options,
       supportedPayments,
@@ -325,14 +374,14 @@ export default defineComponent({
       afterpayAvailable
     }
   },
-  
+
   props: {
     data: {
       type: Object as () => Product[],
       required: true
     }
   },
-  
+
   methods: {
     alipayHandler() {
       return alipay_plus(this.totalPrice.toString())
@@ -472,7 +521,7 @@ export default defineComponent({
     afterpayHandler() {
       return afterpay(this.totalPrice.toString())
     },
-    
+
     getPaymentHandler(payment: string) {
       const handlers: { [key: string]: any } = {
         'Alipay+': this.alipayHandler,
@@ -524,7 +573,7 @@ export default defineComponent({
       }
       return handlers[payment] ? handlers[payment] : console.log('No handler found')
     },
-    
+
     /**
      * 本地支付
      * @param payment 本地支付方式
@@ -533,15 +582,15 @@ export default defineComponent({
       this.showSpin = true
       this.selectedPayment = payment
       this.showQrCode = (payment === 'PayNow') as boolean
-      
+
       const handler = this.getPaymentHandler(payment)
       const data = await handler()
-      
+
       // 发起支付请求
       api.post(`${prefix}/v1/txn/doTransaction`, data).then((res: any) => {
         const { data, respCode, respMsg } = res
         this.showSpin = false
-        
+
         if (respCode === '20000' && respMsg === 'Success') {
           // 根据redirectUrl跳转
           const redirectUrl = data.redirectUrl
@@ -558,7 +607,7 @@ export default defineComponent({
         console.log(err)
       })
     },
-    
+
     /**
      * 复制卡号到剪切板
      * @param cardValue 卡号
@@ -581,54 +630,72 @@ export default defineComponent({
         })
     }
   }
-  
+
 })
 </script>
 
 <template>
-  <div class="payments-container flex-col">
-    <n-card :bordered="false"
-            :hoverable="true"
-            :segmented="{}"
-            class="px-2 py-2"
-            header-class="flex-col"
-            header-extra-class="w-full"
-            size="large"
-            title=" ">
+  <div class="flex-col payments-container">
+    <n-card
+      :bordered="false"
+      :hoverable="true"
+      :segmented="{}"
+      class="px-2 py-2"
+      header-class="flex-col"
+      header-extra-class="w-full"
+      size="large"
+      title=" "
+    >
       <template v-if="!afterpayAvailable" #header-extra>
-        <div class="google-pay-button-container flex-col w-full mt-4">
-          <div id="google-container" class="google-apple-pay-container ">
-          </div>
-          <n-divider>
-            Or pay with
-          </n-divider>
+        <div class="flex-col w-full mt-4 google-pay-button-container">
+          <div id="google-container" class="google-apple-pay-container"></div>
         </div>
       </template>
       <!--   todo:  2.js-sdk收银台渲染-->
-      <div class="onerway-payments-container flex-col items-center">
-        <div id='pacypay_checkout'></div>
-        <n-button v-if="!options.config.showPayButton" class="w-full bg-slate-950 text-gray-50 rounded"
-                  @click="handleSubmit">Submit
+      <div class="flex-col items-center onerway-payments-container">
+        <div id="ga_container"></div>
+        <n-divider> Or pay with </n-divider>
+        <div id="pacypay_checkout"></div>
+        <n-button
+          v-if="!options.config.showPayButton"
+          class="w-full rounded bg-slate-950 text-gray-50"
+          @click="handleSubmit"
+          >Submit
         </n-button>
       </div>
       <!--            两方支付-->
       <card-payment v-if="!afterpayAvailable" :data="products" />
       <!--      本地支付-->
       <n-collapse accordion class="mt-4">
-        <n-collapse-item v-for="payment in supportedPayments" :key="payment" :name="payment.toLowerCase()"
-                         :title="payment">
+        <n-collapse-item
+          v-for="payment in supportedPayments"
+          :key="payment"
+          :name="payment.toLowerCase()"
+          :title="payment"
+        >
           <template #header-extra>
             <!--              todo: 支付icon-->
           </template>
-          <div class="redirect-payment-container px-6 flex flex-col justify-center items-center">
+          <div
+            class="flex flex-col items-center justify-center px-6 redirect-payment-container"
+          >
             <n-spin :show="showSpin">
-              <div v-if="!(showQrCode)" class="icon-description flex flex-col items-center">
-                <icon-redirect class="max-w-24 md:w-1/12 bg-transparent opacity-50" />
-                <span class="opacity-80 ml-2">You will be redirected to complete your payment upon confirmation.</span>
+              <div v-if="!showQrCode" class="flex flex-col items-center icon-description">
+                <icon-redirect class="bg-transparent opacity-50 max-w-24 md:w-1/12" />
+                <span class="ml-2 opacity-80"
+                  >You will be redirected to complete your payment upon
+                  confirmation.</span
+                >
               </div>
             </n-spin>
             <img v-if="showQrCode" :src="qrCode" alt="QR Code" />
-            <n-button v-else class="w-full mt-4 rounded" size="large" type="default" @click="doPayment(payment)">
+            <n-button
+              v-else
+              class="w-full mt-4 rounded"
+              size="large"
+              type="default"
+              @click="doPayment(payment)"
+            >
               Confirm
             </n-button>
           </div>
@@ -639,12 +706,19 @@ export default defineComponent({
       <template #message>
         <p class="text-sm" v-html="toast.defaultMessage"></p>
         <div v-if="toast.message" class="card-wrapper my-2.5">
-          <p v-for="(card,index) in toast.message" :key="index"
-             class="card-info flex items-center justify-between">
-            <span class="card-number font-semibold">
+          <p
+            v-for="(card, index) in toast.message"
+            :key="index"
+            class="flex items-center justify-between card-info"
+          >
+            <span class="font-semibold card-number">
               {{ card }}
             </span>
-            <common-copy-button :data="copyButton" class="ml-1.5" @copied="copyContent(card)" />
+            <common-copy-button
+              :data="copyButton"
+              class="ml-1.5"
+              @copied="copyContent(card)"
+            />
           </p>
         </div>
       </template>
@@ -652,6 +726,4 @@ export default defineComponent({
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

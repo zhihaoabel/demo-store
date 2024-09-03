@@ -304,7 +304,7 @@ export async function queryTransaction(current: string = '1', merchantTxnIds: st
  * @param amount 金额
  */
 export function placeDirectOrder(amount: string) {
-  return createPaymentRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
+  return createPaymentRequestBuilder('', 'GB', '177' + fakerEN_US.string.numeric(8), amount, 'GBP', '86258406122', '', '', 'CARD')
 }
 
 /**
