@@ -121,6 +121,7 @@ export default defineComponent({
           switch (txtInfo.status) { // 交易状态判断
             case 'S': // status 为 'S' 表示成功
               // 支付最终状态以异步通知结果为准
+              console.log('支付成功');
               setTimeout(() => {
                 router.push({ name: 'success', query: { status: '0' } })
               }, 1000)

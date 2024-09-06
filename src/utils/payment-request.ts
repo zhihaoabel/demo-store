@@ -6,7 +6,7 @@ import { generateCurrentTime, generateCustId } from '@/utils/util'
 import { QueryBuilder } from '@/entities/QueryBuilder'
 import { RefundBuilder } from '@/entities/RefundBuilder'
 
-const APP_ID = '1727880846378401792'
+const APP_ID = '1831944691027152896'
 const MERCHANT_NO = '800209'
 const CUST_ID = '730850210551402496'
 const currency = useCurrencyStore()
