@@ -107,8 +107,11 @@ export default defineComponent({
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
     const pacypay = ref<any>(null)
-    const gapay = ref<any>(null)
-
+    const googlePay = ref<any>(null)
+    const isToken = ref(true)
+    const iframeContentLoaded = ref(false)
+    const iframeLoaded = ref(false)
+    const applePay = ref<any>(null)
 
     // 信用卡支付
     const options: object = {
@@ -148,18 +151,17 @@ export default defineComponent({
       environment: 'sandbox',
       mode: 'CARD', // CARD、GooglePay、ApplePay
       config: {
-        subProductType: 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
+        subProductType: isToken.value ? 'TOKEN' : 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
         showPayButton: true,
-        displayBillingInformation: false,
         variables: {
           'colorBackground': 'white', // 主题背景色
           'colorPrimary': '#727272', // 主题色，如输入框高亮、光标颜色
           'colorText': 'colorText', // 字体颜色
           'colorDanger': '#ff144b', // 错误提示颜色
-          'borderRadius': '5px', // 输入框角度
+          'borderRadius': '1px', // 输入框角度
           'fontSizeBase': '16px', // 基础字体大小，会按照该基
           'fontFamily': 'Arial' // 字体
         },
@@ -226,13 +228,16 @@ export default defineComponent({
           },
           '.pacypay-checkout__btn-wrap .pacypay-checkout__button.pacypay-checkout__button--cancel .pacypay-checkout__button__text': {
             'color': '#fff'
+          },
+          '.pacypay-checkout__modal-wrap':{
+            'overflow': 'auto'
           }
         }
       }
     }
 
-    // google apple pay 支付
-    const gaOptions = {
+    // google 支付
+    const googleOptions = {
       container: 'ga_container', // 按钮嵌入的容器
       locale: "zh", // 支持语言
       environment: 'sandbox', // sandbox、production
@@ -275,9 +280,47 @@ export default defineComponent({
         console.log('res', err);
       }
     }
+    // apple pay
+    const appleOptions = {
+      container: 'apple_container', // 按钮嵌入的容器
+      locale: "zh", // 支持语言
+      environment: 'sandbox', // sandbox、production
+      mode: 'ApplePay', // GooglePay、ApplePay
+      config: {
+        applePayButtonType: 'buy', // 'add-money' | 'book' | 'buy' | 'check-out' | 'continue' | 'contribute' | 'donate' | 'order' | 'plain' | 'reload' | 'rent' | 'subscribe' | 'support' | 'tip' | 'top-up' | 'pay'
+        applePayButtonColor: 'black',  // 'black' | 'white' | 'white-outline'
+        buttonWidth: '100px', // 按钮宽度
+        buttonHeight: '40px', // 按钮高度
+        buttonRadius: '4px', // 按钮圆角边框
+      },
+      onPaymentCompleted: function (res: any) { // 成功支付后回调方法
+        const txtInfo = res.data; // 返回交易结果详情
+        const respCode = res.respCode; // 响应码
+        const respMsg = res.respMsg; // 响应信息
+        if(respCode === '20000') { // respCode 为 20000 表示交易正常
+          switch (txtInfo.status) { // 交易状态判断
+            case 'S': // status 为 'S' 表示成功
+              // 支付最终状态以异步通知结果为准
+              setTimeout(() => {
+                router.push({ name: 'success', query: { status: '0' } })
+              }, 1000)
+              break
+            case 'F': // status 为 'F' 表示失败
+              break;
+          }
+        } else {
+          // 交易失败
+        }
+      },
+      onError: function (err: any) {
+        //支付异常回调方法
+        console.log('res', err);
+      }
+    }
 
     const order = async () => {
-      const req: object = await placeDirectOrder(totalPrice.toString())
+      // 判断是否是token支付
+      const req: object = isToken.value ? await placeTokenOrder(totalPrice.toString()) : await placeDirectOrder(totalPrice.toString())
       return api.post(`${prefix}/v1/sdkTxn/doTransaction`, req).then((res: any) => {
         const { data, respCode, respMsg } = res
         if (respCode === '20000' && respMsg === 'Success') {
@@ -307,7 +350,8 @@ export default defineComponent({
       }
       // Onerway 收银台
       pacypay.value = new Pacypay(txnId, options)
-      gapay.value = new Pacypay(txnId, gaOptions)
+      googlePay.value = new Pacypay(txnId, googleOptions)
+      applePay.value = new Pacypay(txnId, appleOptions)
     }
 
     const renderMessage: MessageRenderMessage = (props) => {
@@ -344,6 +388,46 @@ export default defineComponent({
       }
     })
 
+    // sdk加载之后再渲染checkbox
+    onMounted(() => {
+      const checkIframeLoaded = () => {
+        const iframe = document.querySelector('#pacypay_checkout iframe') as HTMLIFrameElement
+        if (iframe) {
+          if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+            nextTick(() => {
+              iframeContentLoaded.value = true
+            })
+          } else {
+            iframe.onload = () => {
+              nextTick(() => {
+                iframeContentLoaded.value = true
+              })
+            }
+          }
+          return true
+        }
+        return false
+      }
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            if (checkIframeLoaded()) {
+              observer.disconnect()
+            }
+          }
+        })
+      })
+
+      observer.observe(document.getElementById('pacypay_checkout'), {
+        childList: true,
+        subtree: true
+      })
+
+      // 以防 iframe 已经存在但还没有加载完成
+      checkIframeLoaded()
+    })
+
     function handleSubmit() {
       console.log('执行自定义支付方法')
       pacypay.value.submit()
@@ -352,6 +436,11 @@ export default defineComponent({
     watch(() => currency.currency, () => {
       supportedPayments.value = afterpayAvailable ? ['Afterpay'] : currency.getSupportedPayments()
       currentCountry.value = currency.getCountry()
+    })
+
+    // 监控isToken，如果isToken改变，则重新拉起SDK
+    watch(() => isToken.value, async () => {
+      await pullUpSDK()
     })
 
     return {
@@ -372,7 +461,10 @@ export default defineComponent({
       pacypay,
       handleSubmit,
       currentRoute,
-      afterpayAvailable
+      afterpayAvailable,
+      isToken,
+      iframeLoaded,
+      iframeContentLoaded
     }
   },
 
@@ -654,9 +746,17 @@ export default defineComponent({
       </template>
       <!--   todo:  2.js-sdk收银台渲染-->
       <div class="flex-col items-center onerway-payments-container">
-        <div id="ga_container"></div>
+        <div id="ga_container" style="height: 40px"></div>
+        <div id="apple_container" style="height: 40px"></div>
         <n-divider> Or pay with </n-divider>
-        <div id="pacypay_checkout"></div>
+        <div class="payment-form-wrapper">
+          <div v-if="iframeContentLoaded" class="-translate-y-4 checkbox-wrapper">
+            <n-checkbox v-model:checked="isToken">
+              Save card for future payments
+            </n-checkbox>
+          </div>
+          <div id="pacypay_checkout"></div>
+        </div>
         <n-button
           v-if="!options.config.showPayButton"
           class="w-full rounded bg-slate-950 text-gray-50"
@@ -727,4 +827,22 @@ export default defineComponent({
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.payment-form-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+pacypay_checkout_container :deep(.pacypay-checkout__payment-method) {
+  border: none;
+}
+
+.checkbox-wrapper {
+  width: 100%;
+  padding: 10px;
+  border-top: none;
+  background-color: #fff;
+}
+</style>
