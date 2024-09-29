@@ -147,6 +147,7 @@ async function createSubscriptionRequestBuilder(lpmsInfo: string, country: strin
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
+    .setMerchantCustId(await generateCustId())
     .setMerchantNo(MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
