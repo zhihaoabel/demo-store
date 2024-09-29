@@ -1,5 +1,6 @@
 // 根据当前时间随机生成uniqueId
 import api from '@/utils/api'
+import { CUST_ID } from '@/utils/payment-request'
 
 export function uniqueId() {
   return new Date().getTime().toString()
@@ -8,9 +9,15 @@ export function uniqueId() {
 // 获取当前用户ip
 export async function getClientIp() {
   try {
-    return await api.get('https://api.ipify.org')
-  } catch (err) {
-    console.log('Error fetching IP: ', err)
+    // 两秒后超时，如果超时就返回CUST_ID
+    return await api.get('https://api.ipify.org', {
+      timeout: 2000
+    })
+  } catch (err: any) {
+    if (err.code === 'ECONNABORTED') {
+      // 请求超时
+      return CUST_ID
+    }
   }
 }
 

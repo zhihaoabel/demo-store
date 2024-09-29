@@ -8,7 +8,7 @@ import { RefundBuilder } from '@/entities/RefundBuilder'
 
 const APP_ID = '1831944691027152896'
 const MERCHANT_NO = '800209'
-const CUST_ID = '730850210551402496'
+export const CUST_ID = '730850210551402496'
 const currency = useCurrencyStore()
 export const prefix = 'api'
 
@@ -107,7 +107,7 @@ export function buildTokenInfo(tokenId: string) {
 export function buildTxnOrderMsg(price: string = '20', productCurrency: string = currency.getCurrency()) {
   const txnOrderMsg: { [key: string]: any } = {}
   txnOrderMsg['returnUrl'] = 'https://demo.onerway.com/'
-  txnOrderMsg['products'] = `[{"price": "${price}","num":"1","name":"iphone11","currency":"${productCurrency}"}]`
+  txnOrderMsg['products'] = `[{"price": "${price}","num":"1","name":"pro1","currency":"${productCurrency}"}]`
   txnOrderMsg['transactionIp'] = fakerEN_US.internet.ip()
   txnOrderMsg['appId'] = APP_ID
   txnOrderMsg['javaEnabled'] = false
@@ -118,7 +118,8 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   txnOrderMsg['accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
   txnOrderMsg['userAgent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
   txnOrderMsg['contentLength'] = '340'
-  txnOrderMsg['language'] = 'en-USen-US'
+  txnOrderMsg['language'] = 'en-US'
+  txnOrderMsg['notifyUrl'] = 'https://www.merchant-store-notify.com'
 
   return JSON.stringify(txnOrderMsg)
 }
@@ -312,7 +313,7 @@ export function placeDirectOrder(amount: string) {
  * @param amount 金额
  */
 export function placeTokenOrder(amount: string) {
-  return createSDKTokenRequestBuilder('', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY', '86258406122', '', '', 'CARD')
+  return createSDKTokenRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
 }
 
 /**
