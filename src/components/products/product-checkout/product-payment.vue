@@ -6,70 +6,33 @@ import { onGooglePayLoaded } from '@/utils/google-pay'
 import '@/utils/onerway'
 import { useCurrencyStore } from '@/stores/currency'
 import IconRedirect from '@/components/icons/IconRedirect.vue'
-import {
-  afterpay,
-  alipay_plus,
-  bancontact,
-  bankTransfer,
-  blikSeamless,
-  boleto,
-  boost,
-  dana,
-  efecty,
-  eleven,
-  gCash,
-  giropay,
-  grabPay,
-  ideal,
-  kakao_pay,
-  konbini,
-  maybank,
-  mcash,
-  mercadoPago,
-  multicaja,
-  myBank,
-  ovo,
-  oxxo,
-  oxxopay,
-  pagoEfectivo,
-  pagosnet,
-  payEasy,
-  payMaya,
-  payNow,
-  payU,
-  permata,
-  pix,
-  placeDirectOrder,
-  placeSubscriptionOrder,
-  placeTokenOrder,
-  poli,
-  prefix,
-  przelewy24,
-  qris,
-  safetypay_cash,
-  safetypay_online,
-  sencillito,
-  sepadd,
-  servipag,
-  shopeePay,
-  skrill,
-  sofort,
-  spei,
-  trustly,
-  webpay
-} from '@/utils/payment-request'
+import { placeDirectOrder, placeSubscriptionOrder, placeTokenOrder, prefix } from '@/utils/payment-request'
 import api from '@/utils/api'
 import type { MessageRenderMessage } from 'naive-ui'
-import { NAlert, useMessage } from 'naive-ui'
+import { NAlert, useMessage, NCard, NCollapse, NCollapseItem, NSpin, NButton } from 'naive-ui'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
-import CardPayment from '@/components/payments/card-payment.vue'
-import type { Product } from '@/entities/Product'
 import { useRouter } from 'vue-router'
+import SdkPayment from './sdk-payment.vue'
+import DirectPayment from './direct-payment.vue'
+import LocalPayment from './local-payment.vue'
+import type { Product } from '@/entities/Product'
 
 export default defineComponent({
   name: 'ProductPayment',
-  components: { CardPayment, CommonCopyButton, CommonToast, IconRedirect },
+  components: {
+    CommonCopyButton,
+    CommonToast,
+    IconRedirect,
+    SdkPayment,
+    DirectPayment,
+    LocalPayment,
+    NCard,
+    NCollapse,
+    NCollapseItem,
+    NSpin,
+    NButton
+  },
 
   setup(props) {
     const router = useRouter()
@@ -106,13 +69,12 @@ export default defineComponent({
     const products = ref<Product[]>(props.data)
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    const pacypay = ref<any>(null)
+    const pacypay = ref<any>({})
     const googlePay = ref<any>(null)
     const isToken = ref(true)
     const iframeContentLoaded = ref(false)
     const iframeLoaded = ref(false)
     const applePay = ref<any>(null)
-    const checkoutContainer = ref<HTMLElement | null>(null)
 
     // 信用卡支付
     const options: object = {
@@ -154,7 +116,7 @@ export default defineComponent({
         await pullUpSDK()
       },
       // locale: 'en',
-      environment: 'sandbox',
+      environment: prefix === 'prod' ? 'production' : 'sandbox',
       mode: 'CARD', // CARD、GooglePay、ApplePay
       config: {
         subProductType: isToken.value ? 'TOKEN' : 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
@@ -252,15 +214,15 @@ export default defineComponent({
     const googleOptions = {
       container: 'ga_container', // 按钮嵌入的容器
       locale: 'zh', // 支持语言
-      environment: 'sandbox', // sandbox、production
+      environment: prefix === 'prod' ? 'production' : 'sandbox', // sandbox、production
       mode: 'GooglePay', // GooglePay、ApplePay
       config: {
         googlePayButtonType: 'buy', // 'book' | 'buy' | 'checkout' | 'donate' | 'order' | 'pay' | 'plain' | 'subscribe'
         googlePayButtonColor: 'black', // 'black' | 'white'
-        googlePayEnvironment: 'TEST', // TEST PRODUCTION
+        googlePayEnvironment: prefix === 'prod' ? 'PRODUCTION' : 'TEST', // TEST PRODUCTION
         buttonWidth: '100%', // 按钮宽度
         buttonHeight: '40px', // 按钮高度
-        buttonRadius: '4px' // 按钮圆角边框
+        buttonRadius: '8px' // 按钮圆角边框
       },
       onPaymentCompleted: async function (res: any) {
         // 成功支付后回调方法
@@ -302,14 +264,14 @@ export default defineComponent({
     const appleOptions = {
       container: 'apple_container', // 按钮嵌入的容器
       locale: 'zh', // 支持语言
-      environment: 'sandbox', // sandbox、production
+      environment: prefix === 'prod' ? 'production' : 'sandbox', // sandbox、production
       mode: 'ApplePay', // GooglePay、ApplePay
       config: {
         applePayButtonType: 'buy', // 'add-money' | 'book' | 'buy' | 'check-out' | 'continue' | 'contribute' | 'donate' | 'order' | 'plain' | 'reload' | 'rent' | 'subscribe' | 'support' | 'tip' | 'top-up' | 'pay'
         applePayButtonColor: 'black', // 'black' | 'white' | 'white-outline'
-        buttonWidth: '100px', // 按钮宽度
+        buttonWidth: '100%', // 按钮宽度
         buttonHeight: '40px', // 按钮高度
-        buttonRadius: '4px' // 按钮圆角边框
+        buttonRadius: '8px' // 按钮圆角边框
       },
       onPaymentCompleted: async function (res: any) {
         // 成功支付后回调方法
@@ -481,7 +443,7 @@ export default defineComponent({
         })
       })
 
-      observer.observe(document.getElementById('pacypay_checkout'), {
+      observer.observe(document.getElementById('pacypay_checkout') as Node, {
         childList: true,
         subtree: true
       })
@@ -544,232 +506,42 @@ export default defineComponent({
   },
 
   methods: {
-    alipayHandler() {
-      return alipay_plus(this.totalPrice.toString())
-    },
-    kakaoHandler() {
-      return kakao_pay(this.totalPrice.toString())
-    },
-    boletoHandler() {
-      return boleto(this.totalPrice.toString())
-    },
-    bankTransferHandler() {
-      return bankTransfer(this.totalPrice.toString())
-    },
-    mercadoPagoHandler() {
-      return mercadoPago(this.totalPrice.toString())
-    },
-    pixHandler() {
-      return pix(this.totalPrice.toString())
-    },
-    servipagHandler() {
-      return servipag(this.totalPrice.toString())
-    },
-    sencillitoHandler() {
-      return sencillito(this.totalPrice.toString())
-    },
-    webpayHandler() {
-      return webpay(this.totalPrice.toString())
-    },
-    multicajaHandler() {
-      return multicaja(this.totalPrice.toString())
-    },
-    efectyHandler() {
-      return efecty(this.totalPrice.toString())
-    },
-    speiHandler() {
-      return spei(this.totalPrice.toString())
-    },
-    oxxoHandler() {
-      return oxxo(this.totalPrice.toString())
-    },
-    oxxopayHandler() {
-      return oxxopay(this.totalPrice.toString())
-    },
-    pagoEfectivoHandler() {
-      return pagoEfectivo(this.totalPrice.toString())
-    },
-    safetypay_cashHandler() {
-      return safetypay_cash(this.totalPrice.toString())
-    },
-    safetypay_onlineHandler() {
-      return safetypay_online(this.totalPrice.toString())
-    },
-    pagosnetHandler() {
-      return pagosnet(this.totalPrice.toString())
-    },
-    idealHandler() {
-      return ideal(this.totalPrice.toString())
-    },
-    skrillHandler() {
-      return skrill(this.totalPrice.toString())
-    },
-    poliHandler() {
-      return poli(this.totalPrice.toString())
-    },
-    sofortHandler() {
-      return sofort(this.totalPrice.toString())
-    },
-    payUHandler() {
-      return payU(this.totalPrice.toString())
-    },
-    trustlyHandler() {
-      return trustly(this.totalPrice.toString())
-    },
-    sepaddHandler() {
-      return sepadd(this.totalPrice.toString())
-    },
-    giropayHandler() {
-      return giropay(this.totalPrice.toString())
-    },
-    bancontactHandler() {
-      return bancontact(this.totalPrice.toString())
-    },
-    myBankHandler() {
-      return myBank(this.totalPrice.toString())
-    },
-    ovoHandler() {
-      return ovo(this.totalPrice.toString())
-    },
-    maybankHandler() {
-      return maybank(this.totalPrice.toString())
-    },
-    permataHandler() {
-      return permata(this.totalPrice.toString())
-    },
-    danaHandler() {
-      return dana(this.totalPrice.toString())
-    },
-    qrisHandler() {
-      return qris(this.totalPrice.toString())
-    },
-    shopeePayHandler() {
-      return shopeePay(this.totalPrice.toString())
-    },
-    konbiniHandler() {
-      return konbini(this.totalPrice.toString())
-    },
-    payEasyHandler() {
-      return payEasy(this.totalPrice.toString())
-    },
-    mcashHandler() {
-      return mcash(this.totalPrice.toString())
-    },
-    boostHandler() {
-      return boost(this.totalPrice.toString())
-    },
-    gCashHandler() {
-      return gCash(this.totalPrice.toString())
-    },
-    grabPayHandler() {
-      return grabPay(this.totalPrice.toString())
-    },
-    payMayaHandler() {
-      return payMaya(this.totalPrice.toString())
-    },
-    elevenHandler() {
-      return eleven(this.totalPrice.toString())
-    },
-    przelewy24Handler() {
-      return przelewy24(this.totalPrice.toString())
-    },
-    blikSeamlessHandler() {
-      return blikSeamless(this.totalPrice.toString())
-    },
-    payNowHandler() {
-      return payNow(this.totalPrice.toString())
-    },
-    afterpayHandler() {
-      return afterpay(this.totalPrice.toString())
-    },
-
-    getPaymentHandler(payment: string) {
-      const handlers: { [key: string]: any } = {
-        'Alipay+': this.alipayHandler,
-        Kakao_Pay: this.kakaoHandler,
-        Boleto: this.boletoHandler,
-        'Bank Transfer': this.bankTransferHandler,
-        MercadoPago: this.mercadoPagoHandler,
-        PIX: this.pixHandler,
-        Servipag: this.servipagHandler,
-        Sencillito: this.sencillitoHandler,
-        Webpay: this.webpayHandler,
-        Multicaja: this.multicajaHandler,
-        Efecty: this.efectyHandler,
-        SPEI: this.speiHandler,
-        OXXO: this.oxxoHandler,
-        OXXOPAY: this.oxxopayHandler,
-        PagoEfectivo: this.pagoEfectivoHandler,
-        'safetypay-cash': this.safetypay_cashHandler,
-        'safetypay-online': this.safetypay_onlineHandler,
-        Pagosnet: this.pagosnetHandler,
-        iDEAL: this.idealHandler,
-        Skrill: this.skrillHandler,
-        POLi: this.poliHandler,
-        Sofort: this.sofortHandler,
-        PayU: this.payUHandler,
-        Trustly: this.trustlyHandler,
-        SEPADD: this.sepaddHandler,
-        Giropay: this.giropayHandler,
-        Bancontact: this.bancontactHandler,
-        MyBank: this.myBankHandler,
-        OVO: this.ovoHandler,
-        Maybank: this.maybankHandler,
-        PERMATA: this.permataHandler,
-        DANA: this.danaHandler,
-        QRIS: this.qrisHandler,
-        ShopeePay: this.shopeePayHandler,
-        Konbini: this.konbiniHandler,
-        PayEasy: this.payEasyHandler,
-        MCASH: this.mcashHandler,
-        Boost: this.boostHandler,
-        GCash: this.gCashHandler,
-        GrabPay: this.grabPayHandler,
-        PayMaya: this.payMayaHandler,
-        Eleven: this.elevenHandler,
-        Przelewy24: this.przelewy24Handler,
-        BLIK_SEAMLESS: this.blikSeamlessHandler,
-        PayNow: this.payNowHandler,
-        Afterpay: this.afterpayHandler
-      }
-      return handlers[payment] ? handlers[payment] : console.log('No handler found')
-    },
-
-    /**
-     * 本地支付
-     * @param payment 本地支付方式
-     */
-    async doPayment(payment: string) {
+    async doPayment({ payment, data }: { payment: string; data: any }) {
       this.showSpin = true
       this.selectedPayment = payment
-      this.showQrCode = (payment === 'PayNow') as boolean
-
-      const handler = this.getPaymentHandler(payment)
-      const data = await handler()
+      this.showQrCode = (payment === 'PayNow')
 
       // 发起支付请求
-      api
-        .post(`${prefix}/v1/txn/doTransaction`, data)
-        .then((res: any) => {
-          const { data, respCode, respMsg } = res
-          this.showSpin = false
+      try {
+        const res: any = await api.post(`${prefix}/v1/txn/doTransaction`, data)
+        const { data: responseData, respCode, respMsg } = res
+        this.showSpin = false
 
-          if (respCode === '20000' && respMsg === 'Success') {
-            // 根据redirectUrl跳转
-            const redirectUrl = data.redirectUrl
-            const codeForm = data.codeForm
-            if (codeForm && payment == 'PayNow') {
-              this.qrCode = codeForm['codeDetails'][1]['codeValue']
-            } else if (redirectUrl) {
-              window.open(redirectUrl, '_blank')
-            }
-          } else {
-            console.log('Payment failed', respMsg)
+        if (respCode === '20000' && respMsg === 'Success') {
+          // 根据redirectUrl跳转
+          const redirectUrl = responseData.redirectUrl
+          const codeForm = responseData.codeForm
+          if (codeForm && payment == 'PayNow') {
+            this.qrCode = codeForm['codeDetails'][1]['codeValue']
+          } else if (redirectUrl) {
+            window.open(redirectUrl, '_blank')
           }
+        } else {
+          console.log('Payment failed', respMsg)
+          this.message.error(respMsg, {
+            closable: true,
+            duration: 5000
+          })
+        }
+      } catch (err) {
+        console.error('Payment error:', err)
+        this.message.error('An error occurred during payment processing', {
+          closable: true,
+          duration: 5000
         })
-        .catch(err => {
-          console.log(err)
-        })
+      } finally {
+        this.showSpin = false
+      }
     },
 
     /**
@@ -816,59 +588,26 @@ export default defineComponent({
           <div id="google-container" class="google-apple-pay-container"></div>
         </div>
       </template>
-      <!--   todo:  2.js-sdk收银台渲染-->
-      <div class="flex-col items-center onerway-payments-container">
-        <div id="ga_container" style="height: 40px"></div>
-        <div id="apple_container" style="height: 40px"></div>
-        <n-divider> Or pay with </n-divider>
-        <div class="payment-form-wrapper">
-          <div v-if="iframeContentLoaded" class="-translate-y-4 checkbox-wrapper">
-            <n-checkbox v-model:checked="isToken"> Save card for future payments </n-checkbox>
-          </div>
-          <div id="pacypay_checkout"></div>
-        </div>
-        <n-button
-          v-if="!options.config.showPayButton"
-          class="w-full rounded bg-slate-950 text-gray-50"
-          @click="handleSubmit"
-          >Submit
-        </n-button>
-      </div>
-      <!--            两方支付-->
-      <card-payment v-if="!afterpayAvailable" :data="products" />
-      <!--      本地支付-->
-      <n-collapse accordion class="mt-4">
-        <n-collapse-item
-          v-for="payment in supportedPayments"
-          :key="payment"
-          :name="payment.toLowerCase()"
-          :title="payment"
-        >
-          <template #header-extra>
-            <!--              todo: 支付icon-->
-          </template>
-          <div class="flex flex-col items-center justify-center px-6 redirect-payment-container">
-            <n-spin :show="showSpin">
-              <div v-if="!showQrCode" class="flex flex-col items-center icon-description">
-                <icon-redirect class="bg-transparent opacity-50 max-w-24 md:w-1/12" />
-                <span class="ml-2 opacity-80"
-                  >You will be redirected to complete your payment upon confirmation.</span
-                >
-              </div>
-            </n-spin>
-            <img v-if="showQrCode" :src="qrCode" alt="QR Code" />
-            <n-button
-              v-else
-              class="w-full mt-4 rounded"
-              size="large"
-              type="default"
-              @click="doPayment(payment)"
-            >
-              Confirm
-            </n-button>
-          </div>
-        </n-collapse-item>
-      </n-collapse>
+      <!-- js-sdk收银台（含GooglePay和ApplePay）-->
+      <sdk-payment
+        v-if="!afterpayAvailable"
+        :options="options"
+        :iframe-content-loaded="iframeContentLoaded"
+        :pacypay="pacypay"
+        v-model:is-token="isToken"
+      />
+      <!-- 两方支付 -->
+      <direct-payment v-if="!afterpayAvailable" :products="products" />
+      <!-- 本地支付 -->
+      <local-payment
+        v-if="supportedPayments"
+        :supported-payments="supportedPayments"
+        :show-spin="showSpin"
+        :show-qr-code="showQrCode"
+        :qr-code="qrCode"
+        :total-price="totalPrice"
+        @do-payment="doPayment"
+      />
     </n-card>
     <common-toast :data="toast">
       <template #message>

@@ -44,21 +44,21 @@ export default defineComponent({
   <div v-if="data.show"
        class="fixed bottom-0 m-6 sm:m-8 md:m-10 md:right-0 lg:right-0 lg:m-12 xl:m-14 2xl:m-16">
     <div v-if="!data.isCollapsed"
-         class="text-gray-800 bg-white py-2 px-4 rounded-md shadow-md sm:text-xs md:text-xs lg:text-xs xl:text-sm 2xl:text-sm w-72">
+         class="px-4 py-2 text-gray-800 bg-white rounded-md shadow-md sm:text-xs md:text-xs lg:text-xs xl:text-sm 2xl:text-sm w-72">
       <button aria-label="Close" class="fill-amber-700 float-end" data-bs-dismiss="toast" type="button"
               @click="toggleToast">
         <n-icon>
           <icon-close class="text-lg" />
         </n-icon>
       </button>
-      <div class="font-bold mb-2 toast-head">
+      <div class="mb-2 font-bold toast-head">
         <slot name="icon">
           <div class="flex items-center justify-center">
             <IconHoldCard v-if="!$slots.icon" class="flex justify-center" />
           </div>
         </slot>
-        <div class="toast-header mt-4">
-          <p class="toast-head-title font-extrabold text-md">{{ data.title || data.defaultTitle }}</p>
+        <div class="mt-4 toast-header">
+          <p class="font-extrabold toast-head-title text-md">{{ data.title || data.defaultTitle }}</p>
         </div>
       </div>
       <div class="toast-body">
@@ -74,7 +74,7 @@ export default defineComponent({
           <icon-customer-service />
         </n-icon>
         <span class="ml-1 text-xs">
-          {{ data.closeText || '测试卡号' }}
+          {{ data.closeText || 'Test Card' }}
         </span>
       </button>
     </div>

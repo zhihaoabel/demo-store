@@ -9,7 +9,7 @@ import mastercard from '@/assets/cards/mastercard.svg'
 import amex from '@/assets/cards/american-express.svg'
 import discover from '@/assets/cards/discover.svg'
 import diner from '@/assets/cards/diners.png'
-import { bindToken, directCard, payByTokenId, prefix, queryToken } from '@/utils/payment-request'
+import { bindToken, directCard, getCurrentConfig, payByTokenId, prefix, queryToken, type PaymentConfig } from '@/utils/payment-request'
 import api from '@/utils/api'
 import { useDialog, useMessage, useModal } from 'naive-ui'
 import router from '@/router'
@@ -145,10 +145,11 @@ export default defineComponent({
     const products = ref<Product[]>(props.data)
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const config = ref<PaymentConfig>(getCurrentConfig())
     
     // 调用查询绑卡接口
     async function queryCardList() {
-      const request = await queryToken()
+      const request = await queryToken(config.value)
       
       return api.post(`${prefix}/v1/txn/queryTokenList`, request).then((res: any) => {
         const { respCode, respMsg, data } = res
@@ -227,7 +228,8 @@ export default defineComponent({
       deleteCard,
       selectedCardToken,
       products,
-      totalPrice
+      totalPrice,
+      config
     }
   },
   
@@ -426,13 +428,13 @@ export default defineComponent({
     },
     
     async buildDirectPayment(cardInfo: any) {
-      return await directCard(this.totalPrice.toString(), cardInfo)
+      return await directCard(this.totalPrice.toString(), cardInfo, this.config)
     },
     
     async buildBindCard(cardInfo: any) {
       const ip = await getClientIp()
       const { month, year } = cardInfo
-      return await bindToken(this.fields.formattedCardNumber, this.fields.cvv, month, year, this.fields.cardHolderName, ip)
+      return await bindToken(this.fields.formattedCardNumber, this.fields.cvv, month, year, this.fields.cardHolderName, ip, this.config)
     },
     
     // todo: 构建分期请求参数
@@ -466,7 +468,7 @@ export default defineComponent({
       this.showSavedSpin = true
       const { tokenId } = card
       
-      const request = await payByTokenId(tokenId, this.totalPrice.toString())
+      const request = await payByTokenId(tokenId, this.totalPrice.toString(), this.config)
       
       api.post(`${prefix}/v1/txn/doTransaction`, request).then((res: any) => {
         const { respCode, respMsg } = res
@@ -486,56 +488,56 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="py-4 rounded-lg bg-card text-card-foreground shadow-sm w-full max-w-7xl">
+  <div class="w-full py-4 rounded-lg shadow-sm bg-card text-card-foreground max-w-7xl">
     <!--    卡列表-->
-    <div v-show="tokens.length > 0" class="card-list mb-4 border-gray-200 border p-4 rounded-lg hover:border-gray-300">
-      <h4 class="text-lg font-semibold text-gray-700 mb-4 leading-3 max-sm:text-sm">
+    <div v-show="tokens.length > 0" class="p-4 mb-4 border border-gray-200 rounded-lg card-list hover:border-gray-300">
+      <h4 class="mb-4 text-lg font-semibold leading-3 text-gray-700 max-sm:text-sm">
         Saved Cards
       </h4>
-      <div v-for="card in tokens" :key="card.id" class="radio-container border rounded-lg border-slate-300 mb-4">
+      <div v-for="card in tokens" :key="card.id" class="mb-4 border rounded-lg radio-container border-slate-300">
         <div class="flex items-center mb-2 sm:mx-4">
           <n-radio
             :checked="card.tokenId === selectedCardToken.tokenId"
             :name="card.paymentMethod"
             :value="card.tokenId"
-            class="translate-y-1 p-2 mt-2 w-full max-sm:mx-2"
+            class="w-full p-2 mt-2 translate-y-1 max-sm:mx-2"
             @change="handleSelectCard(card)"
           >
             <div class="card-info flex items-center justify-between -translate-y-1.5 w-full">
-              <n-icon class="card-icon mr-2 text-4xl">
+              <n-icon class="mr-2 text-4xl card-icon">
                 <!-- todo: 更换src, alt-->
                 <img :alt="capitalizeFirstLetter(card.paymentMethod)"
                      :src="visa" class="translate-y-1.5">
               </n-icon>
               <!-- Full card number for large screens -->
-              <span class="card-number text-sm text-red-600 px-2 font-semibold sm:block hidden min-w-40">
+              <span class="hidden px-2 text-sm font-semibold text-red-600 card-number sm:block min-w-40">
                 {{ card.cardNumber }}
               </span>
               <!-- Last 4 digits for small screens -->
-              <span class="card-number-short text-sm text-red-600 px-1 font-semibold sm:hidden">
+              <span class="px-1 text-sm font-semibold text-red-600 card-number-short sm:hidden">
                 {{ card.cardNumber.slice(-4) }}
               </span>
               <span
-                class="expire text-sm text-gray-500 pl-14 px-2 py-1 font-semibold sm:block hidden">{{ card.month
+                class="hidden px-2 py-1 text-sm font-semibold text-gray-500 expire pl-14 sm:block">{{ card.month
                 }}/{{ card.year }}</span>
               <span
-                class="expire text-sm text-gray-500 ml-2 px-1 font-semibold sm:hidden">{{ card.month
+                class="px-1 ml-2 text-sm font-semibold text-gray-500 expire sm:hidden">{{ card.month
                 }}/{{ card.year.slice(-2) }}</span>
             </div>
           </n-radio>
           <!--        大尺寸屏幕删除按钮-->
           <button
-            class="sm:bg-gray-100 translate-y-1 sm:border rounded-lg sm:px-4 sm:py-1 sm:hover:bg-gray-200 mr-4"
+            class="mr-4 translate-y-1 rounded-lg sm:bg-gray-100 sm:border sm:px-4 sm:py-1 sm:hover:bg-gray-200"
             type="button"
             @click="handleDeleteCard(card)">
             <span
-              class="text-sm text-red-600 active:text-red-900 focus:outline-none focus:shadow-outline text-nowrap max-sm:hidden flex items-center">
+              class="flex items-center text-sm text-red-600 active:text-red-900 focus:outline-none focus:shadow-outline text-nowrap max-sm:hidden">
               <n-icon class="mr-2">
                 <icon-trash />
               </n-icon>
               Delete
             </span>
-            <n-icon class="sm:hidden text-xl text-red-700 hover:text-red-500 active:text-orange-700">
+            <n-icon class="text-xl text-red-700 sm:hidden hover:text-red-500 active:text-orange-700">
               <icon-delete-card />
             </n-icon>
           </button>
@@ -543,8 +545,8 @@ export default defineComponent({
         <!--        CVV-->
         <div v-show="card.tokenId === selectedCardToken.tokenId" class="card-payment-cvv sm:mx-4">
           <div class="flex justify-between max-sm:flex-col">
-            <div class="cvv-container mt-2 mb-4 px-2 flex items-center max-sm:justify-around">
-              <span class="text-md font-semibold text-nowrap max-sm:text-xs">CVV: </span>
+            <div class="flex items-center px-2 mt-2 mb-4 cvv-container max-sm:justify-around">
+              <span class="font-semibold text-md text-nowrap max-sm:text-xs">CVV: </span>
               <n-input v-model:value="fields.savedCvv"
                        autosize
                        class="ml-2 max-sm:block max-sm:w-3/4"
@@ -556,14 +558,14 @@ export default defineComponent({
               />
             </div>
             
-            <div class="sm:mr-4 flex items-center justify-center sm:ml-6 max-sm:flex-col">
+            <div class="flex items-center justify-center sm:mr-4 sm:ml-6 max-sm:flex-col">
               <div class="max-sm:self-start">
                 <p v-if="!isSavedCvvValid" class="text-[#35864c] font-semibold py-1 px-2 sm:text-sm sm:hidden">
                   {{ errorMessages.savedCvv.text }}
                 </p>
               </div>
               <button
-                class="bg-slate-900 font-semibold text-white mt-2 mb-4 py-1 px-6 rounded-md focus:outline-none focus:shadow-outline hover:bg-slate-700 hover:text-gray-100 max-sm:w-11/12"
+                class="px-6 py-1 mt-2 mb-4 font-semibold text-white rounded-md bg-slate-900 focus:outline-none focus:shadow-outline hover:bg-slate-700 hover:text-gray-100 max-sm:w-11/12"
                 type="button"
                 @click="handleTokenPayment(card)"
               >
@@ -582,7 +584,7 @@ export default defineComponent({
         </div>
       </div>
       <button v-show="showAddButton"
-              class="w-full mt-4 p-2 border rounded-lg text-md font-medium text-white bg-slate-900 hover:bg-slate-700 hover:text-gray-100"
+              class="w-full p-2 mt-4 font-medium text-white border rounded-lg text-md bg-slate-900 hover:bg-slate-700 hover:text-gray-100"
               @click="handleAddCard">
         <span>Add Card</span>
         <n-icon>
@@ -591,14 +593,14 @@ export default defineComponent({
       </button>
     </div>
     <!--    收银台信用卡支付表单-->
-    <div v-show="!hasCards" class="credit-card-form bg-white p-8 border border-gray-300 rounded-2xl">
+    <div v-show="!hasCards" class="p-8 bg-white border border-gray-300 credit-card-form rounded-2xl">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-6 ">
+      <div class="flex items-center justify-between mb-6 ">
         <div class="flex items-center text-2xl">
           <n-icon>
             <icon-credit-card />
           </n-icon>
-          <h2 class="text-lg font-semibold text-gray-700 ml-2 max-sm:hidden">
+          <h2 class="ml-2 text-lg font-semibold text-gray-700 max-sm:hidden">
             Credit Card
           </h2>
         </div>
@@ -611,7 +613,7 @@ export default defineComponent({
       <!-- Form fields -->
       <form>
         <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="cardNumber">
+          <label class="block mb-2 text-sm font-bold text-gray-700" for="cardNumber">
             <span class="text-red-500">* </span>{{ labels.cardNumber }}
           </label>
           <input id="cardNumber"
@@ -626,9 +628,9 @@ export default defineComponent({
             {{ errorMessages.cardNumber.text }}
           </p>
         </div>
-        <div class="mb-4 -mx-2 flex ">
-          <div class="px-2 w-1/2 flex-col">
-            <label class="block text-gray-700 text-sm font-bold mb-2 text-nowrap" for="expirationDate">
+        <div class="flex mb-4 -mx-2 ">
+          <div class="flex-col w-1/2 px-2">
+            <label class="block mb-2 text-sm font-bold text-gray-700 text-nowrap" for="expirationDate">
               <span class="text-red-500">* </span>{{ labels.expirationDate }}
             </label>
             <input id="expirationDate"
@@ -643,8 +645,8 @@ export default defineComponent({
               {{ errorMessages.expirationDate.text }}
             </p>
           </div>
-          <div class="px-2 w-1/2 flex-col">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="cvc">
+          <div class="flex-col w-1/2 px-2">
+            <label class="block mb-2 text-sm font-bold text-gray-700" for="cvc">
               <span class="text-red-500">* </span>{{ labels.cvv }}
             </label>
             <input id="cvc"
@@ -659,7 +661,7 @@ export default defineComponent({
           </div>
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="cardHolderName">
+          <label class="block mb-2 text-sm font-bold text-gray-700" for="cardHolderName">
             <span class="text-red-500">* </span>{{ labels.cardHolderName }}
           </label>
           <input id="cardHolderName"
@@ -679,7 +681,7 @@ export default defineComponent({
         </n-checkbox>
         <div class="flex items-center justify-between">
           <button
-            class="bg-black w-full font-semibold text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:bg-slate-700 hover:text-gray-100"
+            class="w-full px-4 py-2 font-semibold text-white bg-black rounded focus:outline-none focus:shadow-outline hover:bg-slate-700 hover:text-gray-100"
             type="button"
             @click="submitForm"
           >
@@ -701,12 +703,12 @@ export default defineComponent({
       <div>Are you sure you want to delete this card?</div>
       <template #action>
         <button
-          class="px-4 py-1 text-md text-slate-600 rounded-md border border-slate-200 hover:bg-green-50 hover:border-green-600 hover:text-green-600"
+          class="px-4 py-1 border rounded-md text-md text-slate-600 border-slate-200 hover:bg-green-50 hover:border-green-600 hover:text-green-600"
           @click="showModal=false">
           No
         </button>
         <button
-          class="px-4 py-1 text-md text-slate-600 rounded-md border border-slate-200 hover:border-red-600 hover:text-red-600 hover:active:ring-primary-100:5"
+          class="px-4 py-1 border rounded-md text-md text-slate-600 border-slate-200 hover:border-red-600 hover:text-red-600 hover:active:ring-primary-100:5"
           @click="deleteCard(selectedCardToken)">
           <n-spin :show="showDeleteSpin" size="small">
             <span class="text-nowrap">Yes</span>

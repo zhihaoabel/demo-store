@@ -1,9 +1,15 @@
 <template>
-  <router-link :to="{name: 'product-detail', query: productQuery, params: {id: productQuery.id}}">
-    <n-card :title="product.name" class="flex-col justify-center hover:bg-slate-400 hover:text-white h-full rounded-xl" hoverable
-            size="small">
+  <router-link
+    :to="{ name: 'product-detail', query: productQuery, params: { id: productQuery.id } }"
+  >
+    <n-card
+      :title="product.name"
+      class="flex-col justify-center h-full hover:bg-slate-400 hover:text-white rounded-xl"
+      hoverable
+      size="small"
+    >
       <template #cover>
-        <img :alt="product.name" :src="product.image">
+        <img :alt="product.name" :src="product.image" />
       </template>
       <p v-html="product.description"></p>
       <template #footer>
@@ -33,7 +39,8 @@ export default defineComponent({
         image: props.product.image,
         description: props.product.description,
         stock: props.product.quantity,
-        link: props.product.link
+        link: props.product.link,
+        paymentMethod: props.product.paymentMethod
       }
     })
     return { currency, productQuery }
@@ -56,6 +63,4 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -24,12 +24,13 @@ export default defineComponent({
       {
         id: 1,
         name: 'Image 1',
-        price: 10,
+        price: 10.99,
         currency: currency.getCurrency(),
         quantity: 0,
         image: iphone13,
         description: 'This is an image 1 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'standard'
       },
       {
         id: 2,
@@ -39,7 +40,8 @@ export default defineComponent({
         quantity: 0,
         image: samsung,
         description: 'This is an image 2 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'standard'
       },
       {
         id: 3,
@@ -49,7 +51,8 @@ export default defineComponent({
         quantity: 0,
         image: pixel6,
         description: 'This is an image 3 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'standard'
       },
       {
         id: 4,
@@ -59,7 +62,8 @@ export default defineComponent({
         quantity: 0,
         image: macbook,
         description: 'This is an image 4 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'standard'
       },
       {
         id: 5,
@@ -69,47 +73,52 @@ export default defineComponent({
         quantity: 0,
         image: dell,
         description: 'This is an image 5 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'standard'
       },
       {
         id: 6,
-        name: 'Image 6',
+        name: 'LocalPayment',
         price: 60,
         currency: currency.getCurrency(),
         quantity: 0,
         image: sony,
         description: 'This is an image 6 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'local-payment'
       },
       {
         id: 7,
-        name: 'Image 7',
+        name: 'SDK-Checkout',
         price: 45,
         currency: currency.getCurrency(),
         quantity: 0,
         image: bose,
         description: 'This is an image 7 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'sdk-checkout'
       },
       {
         id: 8,
-        name: 'Image 8',
+        name: 'SDK-Token',
         price: 75,
         currency: currency.getCurrency(),
         quantity: 0,
         image: watch,
         description: 'This is an image 8 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'sdk-token'
       },
       {
         id: 9,
-        name: 'Image 9',
+        name: 'SDK-Subscription',
         price: 300,
         currency: currency.getCurrency(),
         quantity: 0,
         image: fitbit,
         description: 'This is an image 9 description.',
-        link: '/detail'
+        link: '/detail',
+        paymentMethod: 'sdk-subscription'
       }
     ]
     
@@ -129,7 +138,7 @@ export default defineComponent({
 
 <template>
   <div
-    class="products-container grid gap-8 p-8 max-w-6xl mx-auto sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 scroll-auto">
+    class="grid max-w-6xl gap-8 p-8 mx-auto products-container sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 scroll-auto">
     <product-card v-for="product in products" :key="product.id" :product="product" />
   </div>
 </template>

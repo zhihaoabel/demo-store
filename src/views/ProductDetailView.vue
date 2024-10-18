@@ -25,7 +25,8 @@ export default defineComponent({
         image: String(route.query.image),
         description: String(route.query.description),
         quantity: Number(route.query.stock),
-        link: String(route.query.link)
+        link: String(route.query.link),
+        paymentMethod: String(route.query.paymentMethod)
       }
     })
     
@@ -38,7 +39,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="product-detail-container p-8 max-w-6xl mx-auto flex-col justify-center">
+  <div class="flex-col justify-center max-w-6xl p-8 mx-auto product-detail-container">
     <!--    header-->
     <product-detail-header />
     <!--    描述-->

@@ -7,8 +7,19 @@ export class Product {
   image: string
   description: string
   link: string
+  paymentMethod: string
 
-  constructor(id: number, name: string, price: number, currency: string, quantity: number = 0, image: string, description: string, link: string) {
+  constructor (
+    id: number,
+    name: string,
+    price: number,
+    currency: string,
+    quantity: number = 0,
+    image: string,
+    description: string,
+    link: string,
+    paymentMethod: string
+  ) {
     this.id = id
     this.name = name
     this.price = price
@@ -17,5 +28,6 @@ export class Product {
     this.image = image
     this.description = description
     this.link = link
+    this.paymentMethod = paymentMethod
   }
 }

@@ -1,5 +1,4 @@
 <script lang="ts">
-
 import ProductSummary from '@/components/products/product-checkout/product-summary.vue'
 import ProductPayment from '@/components/products/product-checkout/product-payment.vue'
 import { defineComponent, onBeforeMount, onUnmounted, ref, type Ref, type UnwrapRef } from 'vue'
@@ -15,7 +14,7 @@ export default defineComponent({
   setup() {
     const cart = useCartStore()
     let products: Ref<UnwrapRef<Product[]>> = ref<Product[]>({} as Product[])
-    
+
     onBeforeMount(() => {
       // 优先从localStorage中获取直接下单的商品
       const directOrderProduct = ref(localStorage.getItem('directOrderProduct'))
@@ -31,12 +30,12 @@ export default defineComponent({
         products.value = cart.cart.products
       }
     })
-    
+
     onUnmounted(() => {
       // 清除直接下单的商品
       localStorage.removeItem('directOrderProduct')
     })
-    
+
     return {
       products
     }
@@ -46,12 +45,14 @@ export default defineComponent({
 
 <template>
   <div
-    class="checkout-container grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 justify-center p-2 max-w-6xl mx-auto">
-    <product-summary :data="products" class="max-w-96 mx-auto w-full sm:border-r-2 border-slate-100 " />
+    class="grid justify-center max-w-6xl gap-8 p-2 mx-auto checkout-container sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3"
+  >
+    <product-summary
+      :data="products"
+      class="w-full mx-auto max-w-96 sm:border-r-2 border-slate-100"
+    />
     <product-payment :data="products" class="col-span-2" />
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

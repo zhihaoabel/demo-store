@@ -6,18 +6,27 @@ import { generateCurrentTime, generateCustId } from '@/utils/util'
 import { QueryBuilder } from '@/entities/QueryBuilder'
 import { RefundBuilder } from '@/entities/RefundBuilder'
 
-const APP_ID = '1831944691027152896'
-const MERCHANT_NO = '800209'
-export const CUST_ID = '730850210551402496'
+export const prefix = import.meta.env.PROD ? 'prod' : 'api'
 const currency = useCurrencyStore()
-export const prefix = 'api'
 
-/**
- * 构建账单信息
- * @param country 国家，默认为当前货币对应的国家
- * @param phone 手机号
- * @param identityNumber 身份证号
- */
+export const CUST_ID = '730850210551402496'
+
+export interface PaymentConfig {
+  MERCHANT_NO: string;
+  APP_ID: string;
+  APP_SECRET: string;
+}
+
+export function getCurrentConfig(): PaymentConfig {
+  return {
+    MERCHANT_NO: prefix === 'prod' ? '777777' : '800209',
+    APP_ID: prefix === 'prod' ? '1839538258499215360' : '1831944691027152896',
+    APP_SECRET: import.meta.env.PROD
+      ? import.meta.env.VITE_PROD_APP_SECRET
+      : import.meta.env.VITE_DEV_APP_SECRET
+  }
+}
+
 export function buildBillingInformation(country: string = currency.getCountry(), phone: string = '177' + fakerEN_US.string.numeric(8), identityNumber: string = '12345678') {
   const billingInformation = {} as { [key: string]: string }
   billingInformation['country'] = country
@@ -69,16 +78,9 @@ export function buildMerchantTxnTime() {
   return new Date().toISOString().split('.')[0].replace('T', ' ')
 }
 
-/**
- * 构建收货信息
- * @param country 国家，默认为当前货币对应的国家
- * @param phone 手机号
- * @param identityNumber 身份证号
- */
 export function buildShippingInformation(country: string = currency.getCountry(), phone: string = '177' + fakerEN_US.string.numeric(8), identityNumber: string = '12345678') {
   const shippingInformation = {} as { [key: string]: string }
   shippingInformation['country'] = country
-  // 如果国家是US， 则 province 用
   shippingInformation['province'] =
     shippingInformation['email'] = fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' })
   shippingInformation['firstName'] = fakerEN_US.person.firstName()
@@ -99,17 +101,12 @@ export function buildTokenInfo(tokenId: string) {
   return JSON.stringify(tokenInfo)
 }
 
-/**
- * 构建交易订单信息
- * @param productCurrency 商品货币，默认为当前货币
- * @param price 商品价格，默认为 20
- */
-export function buildTxnOrderMsg(price: string = '20', productCurrency: string = currency.getCurrency()) {
+export function buildTxnOrderMsg(price: string = '20', productCurrency: string = currency.getCurrency(), config: PaymentConfig) {
   const txnOrderMsg: { [key: string]: any } = {}
   txnOrderMsg['returnUrl'] = 'https://demo.onerway.com/'
   txnOrderMsg['products'] = `[{"price": "${price}","num":"1","name":"pro1","currency":"${productCurrency}"}]`
   txnOrderMsg['transactionIp'] = fakerEN_US.internet.ip()
-  txnOrderMsg['appId'] = APP_ID
+  txnOrderMsg['appId'] = config.APP_ID
   txnOrderMsg['javaEnabled'] = false
   txnOrderMsg['colorDepth'] = '24'
   txnOrderMsg['screenHeight'] = '1080'
@@ -124,14 +121,6 @@ export function buildTxnOrderMsg(price: string = '20', productCurrency: string =
   return JSON.stringify(txnOrderMsg)
 }
 
-/**
- * 构建订阅信息
- * @param merchantCustId
- * @param requestType
- * @param expireDate
- * @param frequencyType
- * @param frequencyPoint
- */
 export async function buildSubscriptionInfo(merchantCustId: string = '', requestType: number = 0, expireDate: string = '2030-12-31', frequencyType: string = 'D', frequencyPoint: number = 1) {
   const subscriptionInfo = {} as { [key: string]: string | number }
   subscriptionInfo['merchantCustId'] = merchantCustId ? merchantCustId : await generateCustId()
@@ -143,12 +132,12 @@ export async function buildSubscriptionInfo(merchantCustId: string = '', request
   return JSON.stringify(subscriptionInfo)
 }
 
-async function createSubscriptionRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
+async function createSubscriptionRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS', config: PaymentConfig) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
     .setMerchantCustId(await generateCustId())
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
     .setMerchantTxnTimeZone('+08:00')
@@ -160,18 +149,18 @@ async function createSubscriptionRequestBuilder(lpmsInfo: string, country: strin
     .setSubProductType('SUBSCRIBE')
     .setSubscription(await buildSubscriptionInfo())
     .setTxnType('SALE')
-    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config)).build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createSDKTokenRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
+async function createSDKTokenRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS', config: PaymentConfig) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setMerchantCustId(await generateCustId())
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
     .setMerchantTxnTimeZone('+08:00')
@@ -183,17 +172,17 @@ async function createSDKTokenRequestBuilder(lpmsInfo: string, country: string, p
     .setSubProductType('TOKEN')
     .setSubscription(await buildSubscriptionInfo())
     .setTxnType('SALE')
-    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config)).build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS') {
+async function createPaymentRequestBuilder(lpmsInfo: string, country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', iban: string = '', walletAccountId: string = '', productType: string = 'LPMS', config: PaymentConfig) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setLpmsInfo(buildLpmsInfo(lpmsInfo, iban, walletAccountId))
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
     .setMerchantTxnTimeZone('+08:00')
@@ -204,18 +193,18 @@ async function createPaymentRequestBuilder(lpmsInfo: string, country: string, ph
     .setSign('')
     .setSubProductType('DIRECT')
     .setTxnType('SALE')
-    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency)).build()
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config)).build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createDirectPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', cardInfo: any) {
+async function createDirectPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', cardInfo: any, config: PaymentConfig) {
   const { cardNumber, cvv, month, year, cardHolder } = cardInfo
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
     .setCardInfo(buildCardInfo(cardNumber, cvv, month, year, cardHolder))
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
     .setMerchantTxnTimeZone('+08:00')
@@ -225,18 +214,18 @@ async function createDirectPaymentBuilder(country: string, phone: string, amount
     .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
     .setSign('')
     .setSubProductType('DIRECT')
-    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency))
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config))
     .setTxnType('SALE')
     .build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createTokenPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', tokenId: string) {
+async function createTokenPaymentBuilder(country: string, phone: string, amount: string, currency: string, identityNumber: string = '12345678', productType: string = 'CARD', tokenId: string, config: PaymentConfig) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnId(buildMerchantTxnId())
     .setMerchantTxnTime(buildMerchantTxnTime())
     .setMerchantTxnTimeZone('+08:00')
@@ -247,19 +236,19 @@ async function createTokenPaymentBuilder(country: string, phone: string, amount:
     .setSign('')
     .setSubProductType('TOKEN')
     .setTokenInfo(buildTokenInfo(tokenId))
-    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency))
+    .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config))
     .setTxnType('SALE')
     .build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createQueryBuilder(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = []) {
+async function createQueryBuilder(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = [], config: PaymentConfig) {
   const request = new QueryBuilder()
     .setCurrent(current)
     .setEndTime(generateCurrentTime())
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantTxnIds(merchantTxnIds)
     .setSign('')
     .setStartTime(startTime)
@@ -267,11 +256,11 @@ async function createQueryBuilder(current: string = '1', merchantTxnIds: string[
     .setTxnTypes(txnTypes)
     .build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-async function createRefundBuilder(merchantNo: string, refundType: string, merchantTxnId: string, originTransactionId: string, refundAmount: string) {
+async function createRefundBuilder(merchantNo: string, refundType: string, merchantTxnId: string, originTransactionId: string, refundAmount: string, config: PaymentConfig) {
   const request = new RefundBuilder()
     .setMerchantNo(merchantNo)
     .setRefundType(refundType)
@@ -281,285 +270,252 @@ async function createRefundBuilder(merchantNo: string, refundType: string, merch
     .setSign('')
     .build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-/**
- * 申请退款接口
- * @param merchantNo 商户号
- * @param refundType 退款类型 0 —— 退款；1 —— 取消退款
- * @param merchantTxnId 商户订单号
- * @param originTransactionId 原交易订单号
- * @param refundAmount 退款金额
- */
-export async function refund(merchantNo: string = MERCHANT_NO, refundType: string = '0', merchantTxnId: string, originTransactionId: string, refundAmount: string) {
-  return await createRefundBuilder(merchantNo, refundType, merchantTxnId, originTransactionId, refundAmount)
+export async function refund(merchantNo: string, refundType: string = '0', merchantTxnId: string, originTransactionId: string, refundAmount: string, config: PaymentConfig) {
+  return await createRefundBuilder(merchantNo, refundType, merchantTxnId, originTransactionId, refundAmount, config)
 }
 
-export async function queryTransaction(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = []) {
-  return await createQueryBuilder(current, merchantTxnIds, startTime, transactionIds, txnTypes)
+export async function queryTransaction(current: string = '1', merchantTxnIds: string[] = [], startTime: string = '', transactionIds: string[] = [], txnTypes: string[] = [], config: PaymentConfig) {
+  return await createQueryBuilder(current, merchantTxnIds, startTime, transactionIds, txnTypes, config)
 }
 
-/**
- * 下单接口 —— 直接支付
- * @param amount 金额
- */
-export function placeDirectOrder(amount: string) {
-  return createPaymentRequestBuilder('', 'GB', '177' + fakerEN_US.string.numeric(8), amount, 'GBP', '86258406122', '', '', 'CARD')
+export function placeDirectOrder(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('', 'GB', '177' + fakerEN_US.string.numeric(8), amount, 'GBP', '86258406122', '', '', 'CARD', config)
 }
 
-/**
- * 下单接口 —— 直接支付
- * @param amount 金额
- */
-export function placeTokenOrder(amount: string) {
-  return createSDKTokenRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
+export function placeTokenOrder(amount: string, config: PaymentConfig) {
+  return createSDKTokenRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD', config)
 }
 
-/**
- * 下单接口 —— 订阅支付
- * @param amount 金额
- */
-export function placeSubscriptionOrder(amount: string) {
-  return createSubscriptionRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
+export function placeSubscriptionOrder(amount: string, config: PaymentConfig) {
+  return createSubscriptionRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD', config)
 }
 
-/**
- * Google Apple Pay 下单
- */
-export function placeGoogleAppleOrder(amount: string) {
-  return createPaymentRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD')
+export function placeGoogleAppleOrder(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('', 'US', '177' + fakerEN_US.string.numeric(8), amount, 'USD', '86258406122', '', '', 'CARD', config)
 }
 
-/**
- * alipay+
- * @param amount 金额
- */
-export async function alipay_plus(amount: string) {
-  return createPaymentRequestBuilder('Alipay+', 'CN', '177' + fakerEN_US.string.numeric(8), amount, 'CNY')
+export async function alipay_plus(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Alipay+', 'GB', '177' + fakerEN_US.string.numeric(8), amount, 'GBP', '', '', '', 'LPMS', config)
 }
 
-/**
- * kakao_pay
- * @param amount 金额
- */
-export function kakao_pay(amount: string) {
-  return createPaymentRequestBuilder('Kakao_Pay', 'KR', '8522847035', amount, 'KRW', '86258406122')
+export function kakao_pay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Kakao_Pay', 'KR', '8522847035', amount, 'KRW', '86258406122', '', '', 'LPMS', config)
 }
 
-export function boleto(amount: string) {
-  return createPaymentRequestBuilder('Boleto', 'BR', '8522847035', amount, 'BRL', '86258406122')
+export function boleto(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Boleto', 'BR', '8522847035', amount, 'BRL', '86258406122', '', '', 'LPMS', config)
 }
 
-export function bankTransfer(amount: string) {
-  return createPaymentRequestBuilder('BankTransfer', 'BR', '8522847035', amount, 'BRL', '86258406122')
+export function bankTransfer(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('BankTransfer', 'BR', '8522847035', amount, 'BRL', '86258406122', '', '', 'LPMS', config)
 }
 
-export function mercadoPago(amount: string) {
-  return createPaymentRequestBuilder('MercadoPago', 'BR', '8522847035', amount, 'BRL', '86258406122')
+export function mercadoPago(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('MercadoPago', 'BR', '8522847035', amount, 'BRL', '86258406122', '', '', 'LPMS', config)
 }
 
-export function pix(amount: string) {
-  return createPaymentRequestBuilder('PIX', 'BR', '8522847035', amount, 'BRL', '86258406122')
+export function pix(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PIX', 'BR', '8522847035', amount, 'BRL', '86258406122', '', '', 'LPMS', config)
 }
 
-export function servipag(amount: string = '50') {
-  return createPaymentRequestBuilder('Servipag', 'CL', '8522847035', amount, 'CLP', '12345678')
+export function servipag(amount: string = '50', config: PaymentConfig) {
+  return createPaymentRequestBuilder('Servipag', 'CL', '8522847035', amount, 'CLP', '12345678', '', '', 'LPMS', config)
 }
 
-export function sencillito(amount: string = '50') {
-  return createPaymentRequestBuilder('Sencillito', 'CL', '8522847035', amount, 'CLP', '12345678')
+export function sencillito(amount: string = '50', config: PaymentConfig) {
+  return createPaymentRequestBuilder('Sencillito', 'CL', '8522847035', amount, 'CLP', '12345678', '', '', 'LPMS', config)
 }
 
-export function webpay(amount: string = '50') {
-  return createPaymentRequestBuilder('Webpay', 'CL', '8522847035', amount, 'CLP', '12345678')
+export function webpay(amount: string = '50', config: PaymentConfig) {
+  return createPaymentRequestBuilder('Webpay', 'CL', '8522847035', amount, 'CLP', '12345678', '', '', 'LPMS', config)
 }
 
-export function multicaja(amount: string = '350') {
-  return createPaymentRequestBuilder('Multicaja', 'CL', '8522847035', amount, 'CLP', '86258406122')
+export function multicaja(amount: string = '350', config: PaymentConfig) {
+  return createPaymentRequestBuilder('Multicaja', 'CL', '8522847035', amount, 'CLP', '86258406122', '', '', 'LPMS', config)
 }
 
-export function efecty(amount: string = '10000') {
-  return createPaymentRequestBuilder('Efecty', 'CO', '8522847035', amount, 'COP', '86258406122')
+export function efecty(amount: string = '10000', config: PaymentConfig) {
+  return createPaymentRequestBuilder('Efecty', 'CO', '8522847035', amount, 'COP', '86258406122', '', '', 'LPMS', config)
 }
 
-export function spei(amount: string) {
-  return createPaymentRequestBuilder('SPEI', 'MX', '8522847035', amount, 'MXN', '86258406122')
+export function spei(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('SPEI', 'MX', '8522847035', amount, 'MXN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function oxxo(amount: string) {
-  return createPaymentRequestBuilder('OXXO', 'MX', '8522847035', amount, 'MXN', '86258406122')
+export function oxxo(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('OXXO', 'MX', '8522847035', amount, 'MXN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function oxxopay(amount: string) {
-  return createPaymentRequestBuilder('OXXOPAY', 'MX', '8522847035', amount, 'MXN', '86258406122')
+export function oxxopay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('OXXOPAY', 'MX', '8522847035', amount, 'MXN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function pagoEfectivo(amount: string) {
-  return createPaymentRequestBuilder('PagoEfectivo', 'PE', '8522847035', amount, 'PEN', '86258406122')
+export function pagoEfectivo(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PagoEfectivo', 'PE', '8522847035', amount, 'PEN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function safetypay_cash(amount: string) {
-  return createPaymentRequestBuilder('safetypay-cash', 'PE', '8522847035', amount, 'PEN', '86258406122')
+export function safetypay_cash(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('safetypay-cash', 'PE', '8522847035', amount, 'PEN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function safetypay_online(amount: string) {
-  return createPaymentRequestBuilder('safetypay-online', 'PE', '8522847035', amount, 'PEN', '86258406122')
+export function safetypay_online(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('safetypay-online', 'PE', '8522847035', amount, 'PEN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function pagosnet(amount: string) {
-  return createPaymentRequestBuilder('Pagosnet', 'BO', '8522847035', amount, 'BOB', '86258406122')
+export function pagosnet(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Pagosnet', 'BO', '8522847035', amount, 'BOB', '86258406122', '', '', 'LPMS', config)
 }
 
-export function ideal(amount: string) {
-  return createPaymentRequestBuilder('iDEAL', 'NL', '8522847035', amount, 'EUR', '86258406122')
+export function ideal(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('iDEAL', 'NL', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function skrill(amount: string) {
-  return createPaymentRequestBuilder('Skrill', 'GB', '8522847035', amount, 'GBP', '86258406122')
+export function skrill(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Skrill', 'GB', '8522847035', amount, 'GBP', '86258406122', '', '', 'LPMS', config)
 }
 
-export function poli(amount: string) {
-  return createPaymentRequestBuilder('POLi', 'AU', '8522847035', amount, 'AUD', '86258406122')
+export function poli(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('POLi', 'AU', '8522847035', amount, 'AUD', '86258406122', '', '', 'LPMS', config)
 }
 
-export function sofort(amount: string) {
-  return createPaymentRequestBuilder('Sofort', 'DE', '8522847035', amount, 'EUR', '86258406122')
+export function sofort(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Sofort', 'DE', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function payU(amount: string) {
-  return createPaymentRequestBuilder('PayU', 'PL', '8522847035', amount, 'PLN', '86258406122')
+export function payU(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PayU', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function trustly(amount: string) {
-  return createPaymentRequestBuilder('Trustly', 'SE', '8522847035', amount, 'SEK', '86258406122')
+export function trustly(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Trustly', 'SE', '8522847035', amount, 'SEK', '86258406122', '', '', 'LPMS', config)
 }
 
-export function sepadd(amount: string) {
-  return createPaymentRequestBuilder('SEPADD', 'DE', '8522847035', amount, 'EUR', '86258406122', 'DE89370400440532013000')
+export function sepadd(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('SEPADD', 'DE', '8522847035', amount, 'EUR', '86258406122', 'DE89370400440532013000', '', 'LPMS', config)
 }
 
-export function giropay(amount: string) {
-  return createPaymentRequestBuilder('Giropay', 'DE', '8522847035', amount, 'EUR', '86258406122')
+export function giropay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Giropay', 'DE', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function bancontact(amount: string) {
-  return createPaymentRequestBuilder('Bancontact', 'BE', '8522847035', amount, 'EUR', '86258406122')
+export function bancontact(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Bancontact', 'BE', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function myBank(amount: string) {
-  return createPaymentRequestBuilder('MyBank', 'IT', '8522847035', amount, 'EUR', '86258406122')
+export function myBank(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('MyBank', 'IT', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function payconiq(amount: string) {
-  return createPaymentRequestBuilder('Payconiq', 'NL', '8522847035', amount, 'EUR', '86258406122')
+export function payconiq(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Payconiq', 'NL', '8522847035', amount, 'EUR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function ovo(amount: string) {
-  return createPaymentRequestBuilder('OVO', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function ovo(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('OVO', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function maybank(amount: string) {
-  return createPaymentRequestBuilder('Maybank', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function maybank(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Maybank', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function permata(amount: string) {
-  return createPaymentRequestBuilder('PERMATA', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function permata(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PERMATA', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function dana(amount: string) {
-  return createPaymentRequestBuilder('dana', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function dana(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('DANA', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function qris(amount: string) {
-  return createPaymentRequestBuilder('QRIS', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function qris(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('QRIS', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function shopeePay(amount: string) {
-  return createPaymentRequestBuilder('ShopeePay', 'ID', '8522847035', amount, 'IDR', '3174040609890002')
+export function shopeePay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('ShopeePay', 'ID', '8522847035', amount, 'IDR', '3174040609890002', '', '', 'LPMS', config)
 }
 
-export function konbini(amount: string) {
-  return createPaymentRequestBuilder('Konbini', 'JP', '8522847035', amount, 'JPY', '86258406122')
+export function konbini(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Konbini', 'JP', '8522847035', amount, 'JPY', '86258406122', '', '', 'LPMS', config)
 }
 
-export function payEasy(amount: string) {
-  return createPaymentRequestBuilder('PayEasy', 'JP', '8522847035', amount, 'JPY', '86258406122')
+export function payEasy(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PayEasy', 'JP', '8522847035', amount, 'JPY', '86258406122', '', '', 'LPMS', config)
 }
 
-export function mcash(amount: string) {
-  return createPaymentRequestBuilder('MCASH', 'MY', '8522847035', amount, 'MYR', '86258406122')
+export function mcash(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('MCASH', 'MY', '8522847035', amount, 'MYR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function boost(amount: string) {
-  return createPaymentRequestBuilder('Boost', 'MY', '8522847035', amount, 'MYR', '86258406122')
+export function boost(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Boost', 'MY', '8522847035', amount, 'MYR', '86258406122', '', '', 'LPMS', config)
 }
 
-export function gCash(amount: string) {
-  return createPaymentRequestBuilder('GCash', 'PH', '8522847035', amount, 'PHP', '123456789012')
+export function gCash(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('GCash', 'PH', '8522847035', amount, 'PHP', '123456789012', '', '', 'LPMS', config)
 }
 
-export function grabPay(amount: string) {
-  return createPaymentRequestBuilder('GrabPay', 'PH', '8522847035', amount, 'PHP', '123456789012')
+export function grabPay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('GrabPay', 'PH', '8522847035', amount, 'PHP', '123456789012', '', '', 'LPMS', config)
 }
 
-export function payMaya(amount: string) {
-  return createPaymentRequestBuilder('PayMaya', 'PH', '8522847035', amount, 'PHP', '123456789012')
+export function payMaya(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('PayMaya', 'PH', '8522847035', amount, 'PHP', '123456789012', '', '', 'LPMS', config)
 }
 
-export function eleven(amount: string) {
-  return createPaymentRequestBuilder('ELEVEN', 'PH', '8522847035', amount, 'PHP', '123456789012')
+export function eleven(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('ELEVEN', 'PH', '8522847035', amount, 'PHP', '123456789012', '', '', 'LPMS', config)
 }
 
-export function przelewy24(amount: string) {
-  return createPaymentRequestBuilder('Przelewy24', 'PL', '8522847035', amount, 'PLN', '86258406122')
+export function przelewy24(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Przelewy24', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '', 'LPMS', config)
 }
 
-export function blikSeamless(amount: string) {
-  return createPaymentRequestBuilder('BLIK_SEAMLESS', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '777123')
+export function blikSeamless(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('BLIK_SEAMLESS', 'PL', '8522847035', amount, 'PLN', '86258406122', '', '777123', 'LPMS', config)
 }
 
-export function payNow(amount: string) {
-  return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122')
+export function payNow(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('SG_PAYNOW', 'SG', '8522847035', amount, 'SGD', '86258406122', '', '', 'LPMS', config)
 }
 
-export function afterpay(amount: string) {
-  return createPaymentRequestBuilder('Afterpay', 'US', '8522847035', amount, 'USD', '86258406122')
+export function afterpay(amount: string, config: PaymentConfig) {
+  return createPaymentRequestBuilder('Afterpay', 'US', '8522847035', amount, 'USD', '86258406122', '', '', 'LPMS', config)
 }
 
-export async function bindToken(cardNumber: string, cvv: string, month: string, year: string, cardHolder: string, ip: any) {
+export async function bindToken(cardNumber: string, cvv: string, month: string, year: string, cardHolder: string, ip: any, config: PaymentConfig) {
   const cardInfo = buildCardInfo(cardNumber, cvv, month, year, cardHolder)
   const request = new PaymentRequestBuilder()
-    .setAppId(APP_ID)
+    .setAppId(config.APP_ID)
     .setCardInfo(cardInfo)
     .setCountry(currency.getCountry())
     .setEmail(fakerEN_US.internet.email({ firstName: 'test', lastName: 'user' }))
-    .setMerchantNo(MERCHANT_NO)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantCustId(await generateCustId())
     .setTransactionIp(ip).build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-export async function directCard(amount: string, cardInfo: any) {
-  return createDirectPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', cardInfo)
+export async function directCard(amount: string, cardInfo: any, config: PaymentConfig) {
+  return createDirectPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', cardInfo, config)
 }
 
-export async function queryToken() {
+export async function queryToken(config: PaymentConfig) {
   const request = new PaymentRequestBuilder()
-    .setAppId(APP_ID)
-    .setMerchantNo(MERCHANT_NO)
-    // .setMerchantCustId(CUST_ID)
+    .setAppId(config.APP_ID)
+    .setMerchantNo(config.MERCHANT_NO)
     .setMerchantCustId(await generateCustId())
     .setSign('').build()
 
-  request['sign'] = await generateSign(request, [])
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
   return request
 }
 
-export async function payByTokenId(tokenId: string, amount: string) {
-  return createTokenPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', tokenId)
+export async function payByTokenId(tokenId: string, amount: string, config: PaymentConfig) {
+  return createTokenPaymentBuilder(currency.getCountry(), '177' + fakerEN_US.string.numeric(8), amount, currency.getCurrency(), '86258406122', 'CARD', tokenId, config)
 }
-

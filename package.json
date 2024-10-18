@@ -39,7 +39,7 @@
     "eslint-plugin-playwright": "^1.5.2",
     "eslint-plugin-vue": "^9.17.0",
     "jsdom": "^24.0.0",
-    "naive-ui": "^2.38.1",
+    "naive-ui": "^2.40.1",
     "npm-run-all2": "^6.1.2",
     "postcss": "^8.4.37",
     "prettier": "^3.0.3",

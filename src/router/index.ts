@@ -59,6 +59,26 @@ export const routes = [
         path: '/order',
         name: 'order',
         component: () => import('@/views/OrderView.vue')
+      },
+      {
+        path: '/sdk-checkout',
+        name: 'sdk-checkout',
+        component: () => import('@/views/js-sdk/SDKCheckOutView.vue')
+      },
+      {
+        path: '/sdk-token',
+        name: 'sdk-token',
+        component: () => import('@/views/js-sdk/SDKTokenView.vue')
+      },
+      {
+        path: '/sdk-subscription',
+        name: 'sdk-subscription',
+        component: () => import('@/views/js-sdk/SDKSubscriptionView.vue')
+      },
+      {
+        path: '/local-payment',
+        name: 'local-payment',
+        component: () => import('@/views/LocalPaymentView.vue')
       }
     ]
   }

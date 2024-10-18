@@ -1,37 +1,62 @@
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue'
+import { defineComponent, type PropType, ref } from 'vue'
 import { Product } from '@/entities/Product'
 import { useCurrencyStore } from '@/stores/currency'
 import IconShoppingCart from '@/components/icons/IconShoppingCart.vue'
+import IconPriceTag from '@/components/icons/IconPriceTag.vue'
 import { useCartStore } from '@/stores/cart'
 import { useRoute, useRouter } from 'vue-router'
+import { NButton, NInput, NModal } from 'naive-ui'
 
 export default defineComponent({
   name: 'ProductDetailDescription',
-  components: { IconShoppingCart },
-  
+  components: { IconShoppingCart, NButton, NInput, NModal },
+
   props: {
     product: {
       type: Object as PropType<Product>,
       required: true
     }
   },
-  
-  setup() {
+
+  setup(props) {
     const currency = useCurrencyStore()
     const cart = useCartStore()
     const route = useRoute()
     const router = useRouter()
-    
+
     function handleAddProduct(product: Product) {
       cart.addProduct(product)
     }
-    
+
+    const showPriceModal = ref(false)
+    const newPrice = ref('')
+
+    function openPriceModal() {
+      showPriceModal.value = true
+      newPrice.value = props.product.price.toString()
+    }
+
+    function updatePrice() {
+      if (newPrice.value && !isNaN(Number(newPrice.value))) {
+        props.product.price = Number(newPrice.value)
+        showPriceModal.value = false
+      }
+    }
+
     return {
-      cart, currency, handleAddProduct,route, router
+      cart,
+      currency,
+      handleAddProduct,
+      route,
+      router,
+      showPriceModal,
+      newPrice,
+      openPriceModal,
+      updatePrice
     }
   },
-  
+
   methods: {
     // 点击支付
     handlePayment() {
@@ -40,54 +65,105 @@ export default defineComponent({
       this.cart.directOrderProduct.quantity = 1
       // 保存 directOrderProduct 到 localStorage
       localStorage.setItem('directOrderProduct', JSON.stringify(this.cart.directOrderProduct))
-      // 跳转到 checkout 页面
-      this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
-      // 跳到 afterpay 页面
-      // this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
+
+      // 根据产品的 paymentMethod 决定跳转到哪个页面
+      switch (this.product.paymentMethod) {
+        case 'sdk-checkout':
+          this.router.push({ name: 'sdk-checkout', query: { date: new Date().getTime() } })
+          break
+        case 'sdk-token':
+          this.router.push({ name: 'sdk-token', query: { date: new Date().getTime() } })
+          break
+        case 'sdk-subscription':
+          this.router.push({ name: 'sdk-subscription', query: { date: new Date().getTime() } })
+          break
+        case 'afterpay':
+          this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
+          break
+        case 'local-payment':
+          this.router.push({ name: 'local-payment', query: { date: new Date().getTime() } })
+          break
+        case 'other':
+          // 可以添加其他支付方式的路由
+          console.log('Other payment method')
+          break
+        default:
+          console.error('Unknown payment method:', this.product.paymentMethod)
+          // 可以在这里设置一个默认的跳转页面
+          this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+      }
     }
   }
 })
 </script>
 
 <template>
-  <div class="detail-description flex items-center justify-around mb-10 max-sm:flex-col max-sm:px-2">
-    <div class="detail-image max-w-md sm:mr-4 max-sm:self-start">
-      <img :src="product.image" alt="product-image" class="rounded-lg shadow-2xl shadow-slate-400">
+  <div
+    class="flex items-center justify-around mb-10 detail-description max-sm:flex-col max-sm:px-2"
+  >
+    <div class="max-w-md detail-image sm:mr-4 max-sm:self-start">
+      <img
+        :src="product.image"
+        alt="product-image"
+        class="rounded-lg shadow-2xl shadow-slate-400"
+      />
     </div>
-    <div class="detail-info flex flex-col justify-between items-start self-start max-sm:w-full ">
+    <div class="flex flex-col items-start self-start justify-between detail-info max-sm:w-full">
       <h1 class="text-2xl font-bold sm:mt-8 max-sm:mt-6">{{ product.name }}</h1>
-      <p class="text-lg mt-6">{{ product.description }}</p>
-      <div class="detail-price sm:mt-8 max-sm:mt-4">
+      <p class="mt-6 text-lg">{{ product.description }}</p>
+      <div class="flex items-center detail-price sm:mt-8 max-sm:mt-4">
         <span class="text-xl font-semibold">{{ currency.sign }} {{ product.price }}</span>
+        <n-button quaternary class="px-2 ml-2" size="small" @click="openPriceModal">
+          <template #icon>
+            <n-icon>
+              <icon-price-tag />
+            </n-icon>
+          </template>
+        </n-button>
       </div>
-      <div class="detail-action flex flex-col items-center sm:my-6 max-sm:my-3 w-full">
+      <div class="flex flex-col items-center w-full detail-action sm:my-6 max-sm:my-3">
         <n-button
-          class="flex items-center bg-red-600 text-white px-4 py-2 w-full"
+          class="flex items-center w-full px-4 py-2 text-white bg-red-600"
           icon-placement="right"
           round
-          @click="handleAddProduct(product)">
+          @click="handleAddProduct(product)"
+        >
           <span class="cart-btn">Add To Cart</span>
           <template #icon>
             <icon-shopping-cart class="cart-icon" />
           </template>
         </n-button>
         <n-button
-          class="flex items-center bg-slate-900 text-white px-4 py-2 w-full mt-4"
+          class="flex items-center w-full px-4 py-2 mt-4 text-white bg-slate-900"
           round
-          @click="handlePayment">
+          @click="handlePayment"
+        >
           <span class="cart-btn">Buy Now</span>
         </n-button>
       </div>
-      <div class="comment-container mt-5 flex items-center max-md:w-full">
-        <img alt="" class="icon" src="/comment.svg">
-        <span class="actual-rating font-bold ml-6">
-          4.0
-        </span>
+      <div class="flex items-center mt-5 comment-container max-md:w-full">
+        <img alt="" class="icon" src="/comment.svg" />
+        <span class="ml-6 font-bold actual-rating"> 4.0 </span>
       </div>
     </div>
   </div>
+
+  <n-modal v-model:show="showPriceModal" preset="dialog" title="Edit Price">
+    <template #default>
+      <n-input v-model:value="newPrice" placeholder="Enter new price" />
+    </template>
+    <template #action>
+      <n-button id="update-price-btn" type="primary" @click="updatePrice"> Confirm </n-button>
+    </template>
+  </n-modal>
 </template>
 
 <style scoped>
+#update-price-btn {
+  background-color: var(--n-color);
+}
 
+#update-price-btn:hover {
+  background-color: var(--n-color-hover);
+}
 </style>
