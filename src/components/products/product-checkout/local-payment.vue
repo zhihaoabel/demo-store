@@ -178,7 +178,6 @@ export default defineComponent({
     }
 
     const doPayment = async (payment: string) => {
-      console.log(props.config, 'config')
       const handler = getPaymentHandler(payment)
       if (handler) {
         const data = await handler(props.totalPrice.toString(), props.config)
