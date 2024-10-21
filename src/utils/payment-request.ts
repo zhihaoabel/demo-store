@@ -29,7 +29,7 @@ export function getCurrentConfig(): PaymentConfig {
     MERCHANT_NO: prefix === 'prod' || prefix === '' ? '777777' : '800209',
     APP_ID: prefix === 'prod' || prefix === '' ? '1839538258499215360' : '1831944691027152896',
     APP_SECRET: prefix === 'prod' || prefix === ''
-      ? import.meta.env.VITE_DEV_APP_SECRET_PROD
+      ? import.meta.env.VITE_DEV_APP_SECRET_PROD || import.meta.env.VITE_PROD_APP_SECRET
       : import.meta.env.VITE_DEV_APP_SECRET,
     prefix: prefix
   }

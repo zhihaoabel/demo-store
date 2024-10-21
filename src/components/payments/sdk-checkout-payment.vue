@@ -328,6 +328,7 @@ export default defineComponent({
     }
 
     onMounted(async () => {
+      console.log(props.config, 'config')
       await pullUpSDK()
     })
 
