@@ -3,7 +3,16 @@ import ProductSummary from '@/components/products/product-checkout/product-summa
 import SdkCheckoutPayment from '@/components/payments/sdk-checkout-payment.vue'
 import CommonToast from '@/components/common/common-toast.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
-import { defineComponent, h, onBeforeMount, onUnmounted, ref, watch, type Ref, type UnwrapRef } from 'vue'
+import {
+  defineComponent,
+  h,
+  onBeforeMount,
+  onUnmounted,
+  ref,
+  watch,
+  type Ref,
+  type UnwrapRef
+} from 'vue'
 import { Product } from '@/entities/Product'
 import { useCartStore } from '@/stores/cart'
 import { NAlert, useMessage } from 'naive-ui'
@@ -23,15 +32,16 @@ export default defineComponent({
     const cart = useCartStore()
     let products: Ref<UnwrapRef<Product[]>> = ref<Product[]>({} as Product[])
     const message = useMessage()
-    const paymentType = ref('sdk-checkout')  // 默认使用 sdk-card
+    const paymentType = ref('sdk-checkout') // 默认使用 sdk-card
     // sdk 默认使用800209测试商户
     const config = ref<PaymentConfig>({
       MERCHANT_NO: '800209',
       APP_ID: '1831944691027152896',
-      APP_SECRET: '59c5b49a58c74340b28ecc68004e815a'
+      APP_SECRET: '59c5b49a58c74340b28ecc68004e815a',
+      prefix: 'api'
     })
     const currency = useCurrencyStore()
-    const currentCountry = ref(currency.getCountry()) 
+    const currentCountry = ref(currency.getCountry())
     const totalPrice = ref(0)
 
     const toast = ref({
@@ -91,17 +101,20 @@ export default defineComponent({
         }
       )
     }
-    
-    watch(() => currency.currency, () => {
-      currentCountry.value = currency.getCountry()
-      // 更新配置（如果需要的话）
-      // config.value = getCurrentConfig()
-      // 重新计算总价
-      totalPrice.value = products.value.reduce(
-        (acc: number, item: any) => acc + item.price * item.quantity,
-        0
-      )
-    })
+
+    watch(
+      () => currency.currency,
+      () => {
+        currentCountry.value = currency.getCountry()
+        // 更新配置（如果需要的话）
+        // config.value = getCurrentConfig()
+        // 重新计算总价
+        totalPrice.value = products.value.reduce(
+          (acc: number, item: any) => acc + item.price * item.quantity,
+          0
+        )
+      }
+    )
 
     onBeforeMount(() => {
       // 优先从localStorage中获取直接下单的商品
@@ -126,12 +139,12 @@ export default defineComponent({
         0
       )
     })
-    
+
     onUnmounted(() => {
       // 清除直接下单的商品
       localStorage.removeItem('directOrderProduct')
     })
-    
+
     return {
       products,
       toast,
@@ -149,15 +162,19 @@ export default defineComponent({
 
 <template>
   <div
-    class="grid justify-center max-w-6xl gap-8 p-2 mx-auto checkout-container sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3">
-    <product-summary :data="products" class="w-full mx-auto max-w-96 sm:border-r-2 border-slate-100 " />
-    <sdk-checkout-payment 
-      :data="products" 
-      :payment-type="paymentType" 
+    class="grid justify-center max-w-6xl gap-8 p-2 mx-auto checkout-container sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3"
+  >
+    <product-summary
+      :data="products"
+      class="w-full mx-auto max-w-96 sm:border-r-2 border-slate-100"
+    />
+    <sdk-checkout-payment
+      :data="products"
+      :payment-type="paymentType"
       :config="config"
       :current-country="currentCountry"
       :total-price="totalPrice"
-      class="col-span-2" 
+      class="col-span-2"
     />
     <common-toast :data="toast">
       <template #message>

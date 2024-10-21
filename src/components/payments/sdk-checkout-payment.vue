@@ -37,7 +37,6 @@ import {
   placeDirectOrder,
   placeSubscriptionOrder,
   placeTokenOrder,
-  prefix,
   type PaymentConfig
 } from '@/utils/payment-request'
 import api from '@/utils/api'
@@ -57,7 +56,8 @@ export default defineComponent({
     paymentType: {
       type: String,
       default: 'sdk-checkout',
-      validator: (value: string) => ['sdk-checkout', 'sdk-token', 'sdk-subscription'].includes(value)
+      validator: (value: string) =>
+        ['sdk-checkout', 'sdk-token', 'sdk-subscription'].includes(value)
     },
     config: {
       type: Object as () => PaymentConfig,
@@ -121,7 +121,7 @@ export default defineComponent({
       container: 'pacypay_checkout',
       onPaymentCompleted: handlePaymentCompleted,
       onError: handlePaymentError,
-      environment: prefix === 'prod' ? 'production' : 'sandbox',
+      environment: props.config.prefix === 'prod' ? 'production' : 'sandbox',
       mode: 'CARD',
       config: {
         subProductType: isToken.value ? 'TOKEN' : 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
@@ -219,12 +219,12 @@ export default defineComponent({
     const googleOptions = {
       container: 'ga_container',
       locale: 'zh',
-      environment: prefix === 'prod' ? 'production' : 'sandbox',
+      environment: props.config.prefix === 'prod' ? 'production' : 'sandbox',
       mode: 'GooglePay',
       config: {
         googlePayButtonType: 'buy',
         googlePayButtonColor: 'black',
-        googlePayEnvironment: prefix === 'prod' ? 'PRODUCTION' : 'TEST',
+        googlePayEnvironment: props.config.prefix === 'prod' ? 'PRODUCTION' : 'TEST',
         buttonWidth: '100%',
         buttonHeight: '40px',
         buttonRadius: '16px'
@@ -237,7 +237,7 @@ export default defineComponent({
     const appleOptions = {
       container: 'apple_container',
       locale: 'zh',
-      environment: prefix === 'prod' ? 'production' : 'sandbox',
+      environment: props.config.prefix === 'prod' ? 'production' : 'sandbox',
       mode: 'ApplePay',
       config: {
         applePayButtonType: 'buy',
@@ -287,7 +287,7 @@ export default defineComponent({
       const orderFunction = getOrderFunction(props.paymentType)
       const req: object = await orderFunction(totalPrice.value.toString(), props.config)
       try {
-        const res = await api.post(`${prefix}/v1/sdkTxn/doTransaction`, req)
+        const res = await api.post(`${props.config.prefix}/v1/sdkTxn/doTransaction`, req)
         const { data, respCode, respMsg } = res as any
         if (respCode === '20000' && respMsg === 'Success') {
           return data['transactionId']
@@ -308,7 +308,7 @@ export default defineComponent({
         props.paymentType === 'sdk-subscription' ? placeSubscriptionOrder : placeDirectOrder
       const req: object = await orderFunction(totalPrice.value.toString(), props.config)
       try {
-        const res = await api.post(`${prefix}/v1/sdkTxn/doTransaction`, req)
+        const res = await api.post(`${props.config.prefix}/v1/sdkTxn/doTransaction`, req)
         const { data, respCode, respMsg } = res as any
         if (respCode === '20000' && respMsg === 'Success') {
           return data['transactionId']

@@ -6,7 +6,13 @@ import { generateCurrentTime, generateCustId } from '@/utils/util'
 import { QueryBuilder } from '@/entities/QueryBuilder'
 import { RefundBuilder } from '@/entities/RefundBuilder'
 
-export const prefix = import.meta.env.PROD ? 'prod' : 'api'
+const isProd = import.meta.env.PROD
+const devPrefix = import.meta.env.VITE_DEV_PREFIX
+
+export const prefix = isProd 
+  ? '' 
+  : (devPrefix === 'prod' ? 'prod' : 'api')
+
 const currency = useCurrencyStore()
 
 export const CUST_ID = '730850210551402496'
@@ -15,15 +21,17 @@ export interface PaymentConfig {
   MERCHANT_NO: string;
   APP_ID: string;
   APP_SECRET: string;
+  prefix: string;  // 添加 prefix 到 PaymentConfig 接口
 }
 
 export function getCurrentConfig(): PaymentConfig {
   return {
-    MERCHANT_NO: prefix === 'prod' ? '777777' : '800209',
-    APP_ID: prefix === 'prod' ? '1839538258499215360' : '1831944691027152896',
-    APP_SECRET: import.meta.env.PROD
-      ? import.meta.env.VITE_PROD_APP_SECRET
-      : import.meta.env.VITE_DEV_APP_SECRET
+    MERCHANT_NO: prefix === 'prod' || prefix === '' ? '777777' : '800209',
+    APP_ID: prefix === 'prod' || prefix === '' ? '1839538258499215360' : '1831944691027152896',
+    APP_SECRET: prefix === 'prod' || prefix === ''
+      ? import.meta.env.VITE_DEV_APP_SECRET_PROD
+      : import.meta.env.VITE_DEV_APP_SECRET,
+    prefix: prefix
   }
 }
 

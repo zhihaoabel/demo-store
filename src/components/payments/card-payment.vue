@@ -9,7 +9,14 @@ import mastercard from '@/assets/cards/mastercard.svg'
 import amex from '@/assets/cards/american-express.svg'
 import discover from '@/assets/cards/discover.svg'
 import diner from '@/assets/cards/diners.png'
-import { bindToken, directCard, getCurrentConfig, payByTokenId, prefix, queryToken, type PaymentConfig } from '@/utils/payment-request'
+import {
+  bindToken,
+  directCard,
+  getCurrentConfig,
+  payByTokenId,
+  queryToken,
+  type PaymentConfig
+} from '@/utils/payment-request'
 import api from '@/utils/api'
 import { useDialog, useMessage, useModal } from 'naive-ui'
 import router from '@/router'
@@ -20,7 +27,6 @@ import { OrderStatus } from '@/enums/OrderStatus'
 import IconWarning from '@/components/icons/IconWarning.vue'
 import IconTrash from '@/components/icons/IconTrash.vue'
 import type { Product } from '@/entities/Product'
-
 
 export default defineComponent({
   name: 'CardPayment',
@@ -64,7 +70,7 @@ export default defineComponent({
         width: '25'
       }
     ] as Image[]
-    
+
     // 表单 labels
     const labels = {
       cardNumber: 'Card Number',
@@ -73,7 +79,7 @@ export default defineComponent({
       cardHolderName: 'Card Holder Name',
       payNow: 'Pay'
     }
-    
+
     // 表单 placeholders
     const placeholders = {
       cardNumber: 'Enter card number',
@@ -81,7 +87,7 @@ export default defineComponent({
       cvv: 'Enter CVV',
       cardHolderName: 'Enter card holder name'
     }
-    
+
     // 表单项value
     const fields = ref({
       cardNumber: '',
@@ -91,7 +97,7 @@ export default defineComponent({
       formattedCardNumber: '',
       savedCvv: ''
     })
-    
+
     // 表单错误信息
     const errorMessages = ref({
       cardNumber: {
@@ -121,7 +127,7 @@ export default defineComponent({
         invalid: 'Please enter the full name'
       }
     })
-    
+
     const isCardNumberValid = ref(true)
     const isExpirationDateValid = ref(true)
     const isCvcValid = ref(true)
@@ -133,11 +139,11 @@ export default defineComponent({
     const checkBindCard = ref(false)
     const checkInstallment = ref(false)
     const showModal = ref(false)
-    
+
     const dialog = useDialog()
     const message = useMessage()
     const modal = useModal()
-    
+
     const hasCards = ref(false)
     let tokens = ref<TokenInfo[]>([])
     const showAddButton = ref(true)
@@ -145,58 +151,70 @@ export default defineComponent({
     const products = ref<Product[]>(props.data)
     // 根据products里的price以及quantity计算总价
     const totalPrice = products.value.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    const config = ref<PaymentConfig>(getCurrentConfig())
-    
+    // sdk 默认使用800209测试商户
+    const config = ref<PaymentConfig>({
+      MERCHANT_NO: '800209',
+      APP_ID: '1831944691027152896',
+      APP_SECRET: '59c5b49a58c74340b28ecc68004e815a',
+      prefix: 'api'
+    })
+
     // 调用查询绑卡接口
     async function queryCardList() {
       const request = await queryToken(config.value)
-      
-      return api.post(`${prefix}/v1/txn/queryTokenList`, request).then((res: any) => {
-        const { respCode, respMsg, data } = res
-        if (respCode === '20000' && respMsg === 'Success') {
-          return data['tokenInfos']
-        }
-      }).catch((err) => {
-        console.log(err)
-      })
+
+      return api
+        .post(`${config.value.prefix}/v1/txn/queryTokenList`, request)
+        .then((res: any) => {
+          const { respCode, respMsg, data } = res
+          if (respCode === '20000' && respMsg === 'Success') {
+            return data['tokenInfos']
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
-    
+
     function deleteCard(card: TokenInfo) {
       showDeleteSpin.value = true
       const { id } = card
-      
+
       setTimeout(() => {
-        api.post(`/internal/api/v1/sdkTxn/unbindCard/ + ${id}`).then((res: any) => {
-          const { respCode, respMsg } = res
-          if (respCode === '20000' && respMsg === 'Success') {
-            // 更新 tokens
-            tokens.value = tokens.value.filter((item) => item.id !== id)
-            
-            showModal.value = false
-            showDeleteSpin.value = false
-            message.success('Card deleted successfully')
-          }
-        }).catch((err) => {
-          console.log(err)
-        })
+        api
+          .post(`/internal/api/v1/sdkTxn/unbindCard/ + ${id}`)
+          .then((res: any) => {
+            const { respCode, respMsg } = res
+            if (respCode === '20000' && respMsg === 'Success') {
+              // 更新 tokens
+              tokens.value = tokens.value.filter(item => item.id !== id)
+
+              showModal.value = false
+              showDeleteSpin.value = false
+              message.success('Card deleted successfully')
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
       }, 1000)
-      
+
       // 如果tokens为空，那么显示收银台
       if (tokens.value.length === 1) {
         hasCards.value = false
       }
     }
-    
+
     onMounted(async () => {
       // 根据ip查询当前用户是否绑卡，没有绑卡则显示信用卡表单，否则显示绑卡的列表
       const res = await queryCardList()
-      
+
       if (res.length > 0) {
         hasCards.value = true
         tokens.value = res
       }
     })
-    
+
     return {
       cards,
       labels,
@@ -232,7 +250,7 @@ export default defineComponent({
       config
     }
   },
-  
+
   computed: {
     formattedCardNumber: {
       get() {
@@ -244,7 +262,7 @@ export default defineComponent({
         value.replace(/\s+/g, '')
       }
     },
-    
+
     formattedExpirationDate: {
       get() {
         // 显示时添加斜杠
@@ -256,21 +274,24 @@ export default defineComponent({
       }
     }
   },
-  
+
   props: {
     data: {
       type: Object as () => Product[],
       required: true
     }
   },
-  
+
   methods: {
     capitalizeFirstLetter,
     validateCardNumber() {
       this.isCardNumberValid = this.fields.cardNumber.length === 19
       if (!this.isCardNumberValid) {
         this.fields.formattedCardNumber = JSON.parse(JSON.stringify(this.fields.cardNumber))
-        this.errorMessages.cardNumber.text = this.fields.formattedCardNumber.trim() === '' ? this.errorMessages.cardNumber.empty : this.errorMessages.cardNumber.invalid
+        this.errorMessages.cardNumber.text =
+          this.fields.formattedCardNumber.trim() === ''
+            ? this.errorMessages.cardNumber.empty
+            : this.errorMessages.cardNumber.invalid
       }
       this.fields.formattedCardNumber = this.fields.cardNumber
     },
@@ -278,49 +299,63 @@ export default defineComponent({
       const regex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/
       this.isExpirationDateValid = regex.test(this.fields.expirationDate)
       if (!this.isExpirationDateValid) {
-        this.errorMessages.expirationDate.text = this.fields.expirationDate.trim() === '' ? this.errorMessages.expirationDate.empty : this.errorMessages.expirationDate.invalid
+        this.errorMessages.expirationDate.text =
+          this.fields.expirationDate.trim() === ''
+            ? this.errorMessages.expirationDate.empty
+            : this.errorMessages.expirationDate.invalid
       }
     },
     validateCvv() {
       this.isCvcValid = this.fields.cvv.length >= 3
       if (!this.isCvcValid) {
-        this.errorMessages.cvv.text = this.fields.cvv.trim() === '' ? this.errorMessages.cvv.empty : this.errorMessages.cvv.invalid
+        this.errorMessages.cvv.text =
+          this.fields.cvv.trim() === ''
+            ? this.errorMessages.cvv.empty
+            : this.errorMessages.cvv.invalid
       }
     },
     validateSavedCvv() {
       this.isSavedCvvValid = this.fields.savedCvv.length >= 3
       if (!this.isSavedCvvValid) {
-        this.errorMessages.savedCvv.text = this.fields.savedCvv.trim() === '' ? this.errorMessages.savedCvv.empty : this.errorMessages.savedCvv.invalid
+        this.errorMessages.savedCvv.text =
+          this.fields.savedCvv.trim() === ''
+            ? this.errorMessages.savedCvv.empty
+            : this.errorMessages.savedCvv.invalid
       }
     },
     validateCardHolderName() {
-      const regex = /^([\u4e00-\u9fa5]{2,4}(·[\u4e00-\u9fa5]{2,4})?|[A-Za-z]+(['-]?[A-Za-z]+)*(\s[A-Za-z]+(['-]?[A-Za-z]+)*)*)$/
-      
-      this.isCardHolderNameValid = this.fields.cardHolderName.trim() !== '' && regex.test(this.fields.cardHolderName.trim())
+      const regex =
+        /^([\u4e00-\u9fa5]{2,4}(·[\u4e00-\u9fa5]{2,4})?|[A-Za-z]+(['-]?[A-Za-z]+)*(\s[A-Za-z]+(['-]?[A-Za-z]+)*)*)$/
+
+      this.isCardHolderNameValid =
+        this.fields.cardHolderName.trim() !== '' && regex.test(this.fields.cardHolderName.trim())
       if (!this.isCardHolderNameValid) {
-        this.errorMessages.cardHolderName.text = this.fields.cardHolderName.trim() === '' ? this.errorMessages.cardHolderName.empty : this.errorMessages.cardHolderName.invalid
+        this.errorMessages.cardHolderName.text =
+          this.fields.cardHolderName.trim() === ''
+            ? this.errorMessages.cardHolderName.empty
+            : this.errorMessages.cardHolderName.invalid
       }
     },
-    
+
     formatCardNumber(event: any) {
       let input = event.target.value
       // 移除输入中的所有非数字字符
       let numbers = input.replace(/\D/g, '')
-      
+
       // 检查是否有非数字字符被移除
       if (numbers !== input) {
         // 如果有，阻止输入框更新至非数字的值
         event.target.value = numbers
       }
-      
+
       // 格式化数字，每四位添加一个空格
       this.fields.cardNumber = numbers.replace(/(\d{4})(?=\d)/g, '$1 ')
     },
-    
+
     formatExpirationDate(event: any) {
       // 获取当前输入值，移除所有非数字字符和斜杠
       let input = event.target.value.replace(/\D/g, '')
-      
+
       // 格式化为MM/YY，只有在长度为2且不包含斜线的情况下才添加斜线
       if (input.length <= 2) {
         this.fields.expirationDate = input
@@ -328,7 +363,7 @@ export default defineComponent({
         // 在月份后添加斜线（假设已经输入了两位月份数字）
         this.fields.expirationDate = input.slice(0, 2) + '/' + input.slice(2, 4)
       }
-      
+
       // 判断是否已经过期
       let expirationDate = this.fields.expirationDate.split('/')
       let month = parseInt(expirationDate[0])
@@ -336,7 +371,7 @@ export default defineComponent({
       let currentDate = new Date()
       let currentMonth = currentDate.getMonth() + 1
       let currentYear = parseInt(currentDate.getFullYear().toString().substr(-2))
-      
+
       // 如果输入的年份小于当前年份，或者输入的年份等于当前年份但是月份小于当前月份，则认为已经过期
       if (year < currentYear || (year === currentYear && month < currentMonth)) {
         this.isExpirationDateValid = false
@@ -346,22 +381,27 @@ export default defineComponent({
         this.errorMessages.expirationDate.text = ''
       }
     },
-    
+
     validateFields() {
       this.validateCardNumber()
       this.validateExpirationDate()
       this.validateCvv()
       this.validateCardHolderName()
     },
-    
+
     async submitForm() {
       // 校验参数
       this.validateFields()
-      if (!this.isCardHolderNameValid || !this.isCvcValid || !this.isCardNumberValid || !this.isExpirationDateValid)
+      if (
+        !this.isCardHolderNameValid ||
+        !this.isCvcValid ||
+        !this.isCardNumberValid ||
+        !this.isExpirationDateValid
+      )
         return
       // 显示loading按钮
       this.showSpin = true
-      
+
       // 去掉空格
       this.fields.formattedCardNumber = this.fields.formattedCardNumber.replace(/\s+/g, '')
       // 将expirationDate 拆分成month 和 year
@@ -376,78 +416,99 @@ export default defineComponent({
         year: year,
         cardHolder: this.fields.cardHolderName
       }
-      
+
       // todo: 根据是否绑卡，分期，还是直接信用卡支付构建请求参数
-      if (this.checkBindCard) { // 绑卡
+      if (this.checkBindCard) {
+        // 绑卡
         const request = await this.buildBindCard(cardInfo)
-        
+
         // 调用绑卡接口 /v1/txn/bindCard
-        api.post(`${prefix}/v1/txn/bindCard`, request).then((res: any) => {
-          const { respCode, respMsg } = res
-          if (respCode === '20000' && respMsg === 'Success') {
-            this.showAddButton = true
-            this.hasCards = true
-            router.push({ name: 'success', query: { status: OrderStatus.BindCard, date: new Date().getTime()} })
-          } else {
-            router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
-          }
-        }).catch((err) => {
-          console.log(err)
-        }).finally(() => {
-          this.showSpin = false
-        })
+        api
+          .post(`${this.config.prefix}/v1/txn/bindCard`, request)
+          .then((res: any) => {
+            const { respCode, respMsg } = res
+            if (respCode === '20000' && respMsg === 'Success') {
+              this.showAddButton = true
+              this.hasCards = true
+              router.push({
+                name: 'success',
+                query: { status: OrderStatus.BindCard, date: new Date().getTime() }
+              })
+            } else {
+              router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+          .finally(() => {
+            this.showSpin = false
+          })
         // 分期
       } else if (this.checkInstallment) {
         this.buildInstallment()
         // 信用卡支付
       } else {
         const request = await this.buildDirectPayment(cardInfo)
-        
+
         // 调用信用卡支付接口 /v1/txn/doTransaction
-        api.post(`${prefix}/v1/txn/doTransaction`, request).then((res: any) => {
-          const { respCode, respMsg } = res
-          if (respCode === '20000' && respMsg === 'Success') {
-            router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })
-          } else {
-            router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
-          }
-        }).catch((err) => {
-          console.log(err)
-        }).finally(() => {
-          this.showSpin = false
-        })
+        api
+          .post(`${this.config.prefix}/v1/txn/doTransaction`, request)
+          .then((res: any) => {
+            const { respCode, respMsg } = res
+            if (respCode === '20000' && respMsg === 'Success') {
+              router.push({
+                name: 'success',
+                query: { status: OrderStatus.Success, date: new Date().getTime() }
+              })
+            } else {
+              router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+          .finally(() => {
+            this.showSpin = false
+          })
       }
     },
-    
+
     handleBindCard(checked: boolean) {
       this.checkBindCard = checked
     },
-    
+
     handleInstallment(checked: boolean) {
       this.checkInstallment = checked
     },
-    
+
     async buildDirectPayment(cardInfo: any) {
       return await directCard(this.totalPrice.toString(), cardInfo, this.config)
     },
-    
+
     async buildBindCard(cardInfo: any) {
       const ip = await getClientIp()
       const { month, year } = cardInfo
-      return await bindToken(this.fields.formattedCardNumber, this.fields.cvv, month, year, this.fields.cardHolderName, ip, this.config)
+      return await bindToken(
+        this.fields.formattedCardNumber,
+        this.fields.cvv,
+        month,
+        year,
+        this.fields.cardHolderName,
+        ip,
+        this.config
+      )
     },
-    
+
     // todo: 构建分期请求参数
-    buildInstallment() {
-    
-    },
-    
+    buildInstallment() {},
+
     handleAddCard() {
       this.hasCards = !this.hasCards
       // 隐藏button
       this.showAddButton = false
     },
-    
+
     handleSelectCard(card: TokenInfo) {
       // 清空CVV输入框内容和错误信息
       this.errorMessages.savedCvv.text = ''
@@ -455,33 +516,40 @@ export default defineComponent({
       const { cardNumber } = card
       this.selectedCardToken = card
     },
-    
+
     // 删除卡
     handleDeleteCard(card: TokenInfo) {
       this.showModal = true
       this.selectedCardToken = card
     },
-    
+
     async handleTokenPayment(card: TokenInfo) {
       this.validateSavedCvv()
       if (!this.isSavedCvvValid) return
       this.showSavedSpin = true
       const { tokenId } = card
-      
+
       const request = await payByTokenId(tokenId, this.totalPrice.toString(), this.config)
-      
-      api.post(`${prefix}/v1/txn/doTransaction`, request).then((res: any) => {
-        const { respCode, respMsg } = res
-        if (respCode === '20000' && respMsg === 'Success') {
-          router.push({ name: 'success', query: { status: OrderStatus.Success, date: new Date().getTime() } })
-        } else {
-          router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
-        }
-      }).catch((err) => {
-        console.log(err)
-      }).finally(() => {
-        this.showSavedSpin = false
-      })
+
+      api
+        .post(`${this.config.prefix}/v1/txn/doTransaction`, request)
+        .then((res: any) => {
+          const { respCode, respMsg } = res
+          if (respCode === '20000' && respMsg === 'Success') {
+            router.push({
+              name: 'success',
+              query: { status: OrderStatus.Success, date: new Date().getTime() }
+            })
+          } else {
+            router.push({ name: 'failure', query: { msg: respMsg, date: new Date().getTime() } })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+        .finally(() => {
+          this.showSavedSpin = false
+        })
     }
   }
 })
@@ -490,11 +558,16 @@ export default defineComponent({
 <template>
   <div class="w-full py-4 rounded-lg shadow-sm bg-card text-card-foreground max-w-7xl">
     <!--    卡列表-->
-    <div v-show="tokens.length > 0" class="p-4 mb-4 border border-gray-200 rounded-lg card-list hover:border-gray-300">
-      <h4 class="mb-4 text-lg font-semibold leading-3 text-gray-700 max-sm:text-sm">
-        Saved Cards
-      </h4>
-      <div v-for="card in tokens" :key="card.id" class="mb-4 border rounded-lg radio-container border-slate-300">
+    <div
+      v-show="tokens.length > 0"
+      class="p-4 mb-4 border border-gray-200 rounded-lg card-list hover:border-gray-300"
+    >
+      <h4 class="mb-4 text-lg font-semibold leading-3 text-gray-700 max-sm:text-sm">Saved Cards</h4>
+      <div
+        v-for="card in tokens"
+        :key="card.id"
+        class="mb-4 border rounded-lg radio-container border-slate-300"
+      >
         <div class="flex items-center mb-2 sm:mx-4">
           <n-radio
             :checked="card.tokenId === selectedCardToken.tokenId"
@@ -506,11 +579,16 @@ export default defineComponent({
             <div class="card-info flex items-center justify-between -translate-y-1.5 w-full">
               <n-icon class="mr-2 text-4xl card-icon">
                 <!-- todo: 更换src, alt-->
-                <img :alt="capitalizeFirstLetter(card.paymentMethod)"
-                     :src="visa" class="translate-y-1.5">
+                <img
+                  :alt="capitalizeFirstLetter(card.paymentMethod)"
+                  :src="visa"
+                  class="translate-y-1.5"
+                />
               </n-icon>
               <!-- Full card number for large screens -->
-              <span class="hidden px-2 text-sm font-semibold text-red-600 card-number sm:block min-w-40">
+              <span
+                class="hidden px-2 text-sm font-semibold text-red-600 card-number sm:block min-w-40"
+              >
                 {{ card.cardNumber }}
               </span>
               <!-- Last 4 digits for small screens -->
@@ -518,26 +596,31 @@ export default defineComponent({
                 {{ card.cardNumber.slice(-4) }}
               </span>
               <span
-                class="hidden px-2 py-1 text-sm font-semibold text-gray-500 expire pl-14 sm:block">{{ card.month
-                }}/{{ card.year }}</span>
-              <span
-                class="px-1 ml-2 text-sm font-semibold text-gray-500 expire sm:hidden">{{ card.month
-                }}/{{ card.year.slice(-2) }}</span>
+                class="hidden px-2 py-1 text-sm font-semibold text-gray-500 expire pl-14 sm:block"
+                >{{ card.month }}/{{ card.year }}</span
+              >
+              <span class="px-1 ml-2 text-sm font-semibold text-gray-500 expire sm:hidden"
+                >{{ card.month }}/{{ card.year.slice(-2) }}</span
+              >
             </div>
           </n-radio>
           <!--        大尺寸屏幕删除按钮-->
           <button
             class="mr-4 translate-y-1 rounded-lg sm:bg-gray-100 sm:border sm:px-4 sm:py-1 sm:hover:bg-gray-200"
             type="button"
-            @click="handleDeleteCard(card)">
+            @click="handleDeleteCard(card)"
+          >
             <span
-              class="flex items-center text-sm text-red-600 active:text-red-900 focus:outline-none focus:shadow-outline text-nowrap max-sm:hidden">
+              class="flex items-center text-sm text-red-600 active:text-red-900 focus:outline-none focus:shadow-outline text-nowrap max-sm:hidden"
+            >
               <n-icon class="mr-2">
                 <icon-trash />
               </n-icon>
               Delete
             </span>
-            <n-icon class="text-xl text-red-700 sm:hidden hover:text-red-500 active:text-orange-700">
+            <n-icon
+              class="text-xl text-red-700 sm:hidden hover:text-red-500 active:text-orange-700"
+            >
               <icon-delete-card />
             </n-icon>
           </button>
@@ -547,20 +630,24 @@ export default defineComponent({
           <div class="flex justify-between max-sm:flex-col">
             <div class="flex items-center px-2 mt-2 mb-4 cvv-container max-sm:justify-around">
               <span class="font-semibold text-md text-nowrap max-sm:text-xs">CVV: </span>
-              <n-input v-model:value="fields.savedCvv"
-                       autosize
-                       class="ml-2 max-sm:block max-sm:w-3/4"
-                       clearable
-                       maxlength="4"
-                       placeholder="CVV"
-                       style="min-width: 6rem"
-                       @blur="validateSavedCvv"
+              <n-input
+                v-model:value="fields.savedCvv"
+                autosize
+                class="ml-2 max-sm:block max-sm:w-3/4"
+                clearable
+                maxlength="4"
+                placeholder="CVV"
+                style="min-width: 6rem"
+                @blur="validateSavedCvv"
               />
             </div>
-            
+
             <div class="flex items-center justify-center sm:mr-4 sm:ml-6 max-sm:flex-col">
               <div class="max-sm:self-start">
-                <p v-if="!isSavedCvvValid" class="text-[#35864c] font-semibold py-1 px-2 sm:text-sm sm:hidden">
+                <p
+                  v-if="!isSavedCvvValid"
+                  class="text-[#35864c] font-semibold py-1 px-2 sm:text-sm sm:hidden"
+                >
                   {{ errorMessages.savedCvv.text }}
                 </p>
               </div>
@@ -575,17 +662,22 @@ export default defineComponent({
               </button>
             </div>
           </div>
-          
+
           <div>
-            <p v-if="!isSavedCvvValid" class="text-[#35864c] font-semibold py-1 px-12 sm:text-sm max-sm:hidden">
+            <p
+              v-if="!isSavedCvvValid"
+              class="text-[#35864c] font-semibold py-1 px-12 sm:text-sm max-sm:hidden"
+            >
               {{ errorMessages.savedCvv.text }}
             </p>
           </div>
         </div>
       </div>
-      <button v-show="showAddButton"
-              class="w-full p-2 mt-4 font-medium text-white border rounded-lg text-md bg-slate-900 hover:bg-slate-700 hover:text-gray-100"
-              @click="handleAddCard">
+      <button
+        v-show="showAddButton"
+        class="w-full p-2 mt-4 font-medium text-white border rounded-lg text-md bg-slate-900 hover:bg-slate-700 hover:text-gray-100"
+        @click="handleAddCard"
+      >
         <span>Add Card</span>
         <n-icon>
           <icon-add-card class="ml-2 text-xl" />
@@ -593,16 +685,17 @@ export default defineComponent({
       </button>
     </div>
     <!--    收银台信用卡支付表单-->
-    <div v-show="!hasCards" class="p-8 bg-white border border-gray-300 credit-card-form rounded-2xl">
+    <div
+      v-show="!hasCards"
+      class="p-8 bg-white border border-gray-300 credit-card-form rounded-2xl"
+    >
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6 ">
+      <div class="flex items-center justify-between mb-6">
         <div class="flex items-center text-2xl">
           <n-icon>
             <icon-credit-card />
           </n-icon>
-          <h2 class="ml-2 text-lg font-semibold text-gray-700 max-sm:hidden">
-            Credit Card
-          </h2>
+          <h2 class="ml-2 text-lg font-semibold text-gray-700 max-sm:hidden">Credit Card</h2>
         </div>
         <!-- 信用卡 icons -->
         <div v-if="cards" class="flex items-center justify-center">
@@ -616,32 +709,45 @@ export default defineComponent({
           <label class="block mb-2 text-sm font-bold text-gray-700" for="cardNumber">
             <span class="text-red-500">* </span>{{ labels.cardNumber }}
           </label>
-          <input id="cardNumber"
-                 :placeholder="placeholders.cardNumber"
-                 :value="formattedCardNumber"
-                 class="card-number text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
-                 maxlength="19"
-                 type="text"
-                 @blur="validateCardNumber"
-                 @input="formatCardNumber" />
-          <p v-if="!isCardNumberValid" class="text-[#35864c] font-semibold mt-1 pl-1 md:text-sm lg:text-sm">
+          <input
+            id="cardNumber"
+            :placeholder="placeholders.cardNumber"
+            :value="formattedCardNumber"
+            class="card-number text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
+            maxlength="19"
+            type="text"
+            @blur="validateCardNumber"
+            @input="formatCardNumber"
+          />
+          <p
+            v-if="!isCardNumberValid"
+            class="text-[#35864c] font-semibold mt-1 pl-1 md:text-sm lg:text-sm"
+          >
             {{ errorMessages.cardNumber.text }}
           </p>
         </div>
-        <div class="flex mb-4 -mx-2 ">
+        <div class="flex mb-4 -mx-2">
           <div class="flex-col w-1/2 px-2">
-            <label class="block mb-2 text-sm font-bold text-gray-700 text-nowrap" for="expirationDate">
+            <label
+              class="block mb-2 text-sm font-bold text-gray-700 text-nowrap"
+              for="expirationDate"
+            >
               <span class="text-red-500">* </span>{{ labels.expirationDate }}
             </label>
-            <input id="expirationDate"
-                   :placeholder="placeholders.expirationDate"
-                   :value="formattedExpirationDate"
-                   class=" text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
-                   maxlength="5"
-                   type="text"
-                   @blur="validateExpirationDate"
-                   @input="formatExpirationDate">
-            <p v-if="!isExpirationDateValid" class="text-[#35864c] font-semibold pt-1 pl-1 md:text-sm lg:text-sm">
+            <input
+              id="expirationDate"
+              :placeholder="placeholders.expirationDate"
+              :value="formattedExpirationDate"
+              class="text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
+              maxlength="5"
+              type="text"
+              @blur="validateExpirationDate"
+              @input="formatExpirationDate"
+            />
+            <p
+              v-if="!isExpirationDateValid"
+              class="text-[#35864c] font-semibold pt-1 pl-1 md:text-sm lg:text-sm"
+            >
               {{ errorMessages.expirationDate.text }}
             </p>
           </div>
@@ -649,13 +755,18 @@ export default defineComponent({
             <label class="block mb-2 text-sm font-bold text-gray-700" for="cvc">
               <span class="text-red-500">* </span>{{ labels.cvv }}
             </label>
-            <input id="cvc"
-                   v-model="fields.cvv"
-                   :placeholder="placeholders.cvv"
-                   class="text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
-                   type="text"
-                   @blur="validateCvv">
-            <p v-if="!isCvcValid" class="text-[#35864c] font-semibold pt-1 pl-1 md:text-sm lg:text-sm">
+            <input
+              id="cvc"
+              v-model="fields.cvv"
+              :placeholder="placeholders.cvv"
+              class="text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
+              type="text"
+              @blur="validateCvv"
+            />
+            <p
+              v-if="!isCvcValid"
+              class="text-[#35864c] font-semibold pt-1 pl-1 md:text-sm lg:text-sm"
+            >
               {{ errorMessages.cvv.text }}
             </p>
           </div>
@@ -664,20 +775,28 @@ export default defineComponent({
           <label class="block mb-2 text-sm font-bold text-gray-700" for="cardHolderName">
             <span class="text-red-500">* </span>{{ labels.cardHolderName }}
           </label>
-          <input id="cardHolderName"
-                 v-model="fields.cardHolderName"
-                 :placeholder="placeholders.cardHolderName"
-                 class="text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
-                 type="text"
-                 @blur="validateCardHolderName">
-          <p v-if="!isCardHolderNameValid" class="text-[#35864c] font-semibold mt-1 pl-1 md:text-sm lg:text-sm">
+          <input
+            id="cardHolderName"
+            v-model="fields.cardHolderName"
+            :placeholder="placeholders.cardHolderName"
+            class="text-sm appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight"
+            type="text"
+            @blur="validateCardHolderName"
+          />
+          <p
+            v-if="!isCardHolderNameValid"
+            class="text-[#35864c] font-semibold mt-1 pl-1 md:text-sm lg:text-sm"
+          >
             {{ errorMessages.cardHolderName.text }}
           </p>
         </div>
         <!-- 绑卡 -->
-        <n-checkbox v-model:checked="checkBindCard" class="my-4"
-                    label="Save card for future payments"
-                    @update:checked="handleBindCard">
+        <n-checkbox
+          v-model:checked="checkBindCard"
+          class="my-4"
+          label="Save card for future payments"
+          @update:checked="handleBindCard"
+        >
         </n-checkbox>
         <div class="flex items-center justify-between">
           <button
@@ -692,7 +811,7 @@ export default defineComponent({
         </div>
       </form>
     </div>
-    
+
     <n-modal v-model:show="showModal" preset="dialog">
       <template #icon>
         <icon-warning class="text-orange-600" />
@@ -704,19 +823,20 @@ export default defineComponent({
       <template #action>
         <button
           class="px-4 py-1 border rounded-md text-md text-slate-600 border-slate-200 hover:bg-green-50 hover:border-green-600 hover:text-green-600"
-          @click="showModal=false">
+          @click="showModal = false"
+        >
           No
         </button>
         <button
           class="px-4 py-1 border rounded-md text-md text-slate-600 border-slate-200 hover:border-red-600 hover:text-red-600 hover:active:ring-primary-100:5"
-          @click="deleteCard(selectedCardToken)">
+          @click="deleteCard(selectedCardToken)"
+        >
           <n-spin :show="showDeleteSpin" size="small">
             <span class="text-nowrap">Yes</span>
           </n-spin>
         </button>
       </template>
     </n-modal>
-  
   </div>
 </template>
 

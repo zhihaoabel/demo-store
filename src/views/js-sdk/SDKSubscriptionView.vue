@@ -37,7 +37,8 @@ export default defineComponent({
     const config = ref<PaymentConfig>({
       MERCHANT_NO: '800209',
       APP_ID: '1831944691027152896',
-      APP_SECRET: '59c5b49a58c74340b28ecc68004e815a'
+      APP_SECRET: '59c5b49a58c74340b28ecc68004e815a',
+      prefix: 'api'
     })
     const currency = useCurrencyStore()
     const currentCountry = ref(currency.getCountry())

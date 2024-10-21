@@ -21,7 +21,7 @@ import { NAlert, useMessage } from 'naive-ui'
 import type { MessageRenderMessage } from 'naive-ui'
 import { useCurrencyStore } from '@/stores/currency'
 import api from '@/utils/api'
-import { prefix, getCurrentConfig, type PaymentConfig } from '@/utils/payment-request'
+import { getCurrentConfig, type PaymentConfig, prefix } from '@/utils/payment-request'
 import { useRouter } from 'vue-router'
 
 export default defineComponent({
@@ -47,6 +47,7 @@ export default defineComponent({
     const supportedPayments = ref(currency.getSupportedPayments())
     const totalPrice = ref(0)
     const config = ref<PaymentConfig>(getCurrentConfig())
+    console.log(config.value, 'config')
 
     const toast = ref({
       show: true,
@@ -112,7 +113,7 @@ export default defineComponent({
       showQrCode.value = payment === 'PayNow'
 
       try {
-        const res: any = await api.post(`${prefix}/v1/txn/doTransaction`, { ...data })
+        const res: any = await api.post(`${config.value.prefix}/v1/txn/doTransaction`, { ...data })
         const { data: responseData, respCode, respMsg } = res
         showSpin.value = false
 
