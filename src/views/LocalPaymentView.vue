@@ -47,7 +47,6 @@ export default defineComponent({
     const supportedPayments = ref(currency.getSupportedPayments())
     const totalPrice = ref(0)
     const config = ref<PaymentConfig>(getCurrentConfig())
-    console.log(config.value, 'config')
 
     const toast = ref({
       show: true,
