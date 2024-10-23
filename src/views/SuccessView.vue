@@ -30,11 +30,11 @@ export default defineComponent({
     
     function handleClick() {
       if (status === '0') {
-        router.push('/')
+        router.push({ name: 'index' })
       } else if (status === '1') {
         router.go(-1)
       } else {
-        router.push('/')
+        router.push({ name: 'index' })
       }
     }
     
@@ -44,24 +44,24 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-100">
-    <div class="rounded-lg bg-gray-50 px-16 py-14">
+  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="px-16 rounded-lg bg-gray-50 py-14">
       <div class="flex justify-center">
-        <div class="rounded-full bg-green-200 p-6">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-500 p-4">
-            <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5"
+        <div class="p-6 bg-green-200 rounded-full">
+          <div class="flex items-center justify-center w-16 h-16 p-4 bg-green-500 rounded-full">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5"
                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
         </div>
       </div>
-      <h3 class="my-4 text-center text-3xl font-semibold text-gray-700">Congratuation!!!</h3>
+      <h3 class="my-4 text-3xl font-semibold text-center text-gray-700">Congratuation!!!</h3>
       <p class="w-[230px] text-center font-normal text-gray-600">
         {{ msg }}
       </p>
       <button
-        class="mx-auto mt-6 block rounded-xl border-4 border-transparent bg-orange-400 px-6 py-3 text-center text-base font-medium text-orange-100 outline-8 hover:outline hover:duration-300"
+        class="block px-6 py-3 mx-auto mt-6 text-base font-medium text-center text-orange-100 bg-orange-400 border-4 border-transparent rounded-xl outline-8 hover:outline hover:duration-300"
         @click="handleClick"
       >
         {{ buttonTxt }}

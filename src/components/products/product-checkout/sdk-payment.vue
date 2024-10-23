@@ -5,7 +5,9 @@
     <n-divider> Or pay with </n-divider>
     <div class="payment-form-wrapper">
       <div v-if="localIframeContentLoaded" class="-translate-y-4 checkbox-wrapper">
-        <n-checkbox v-model:checked="localIsToken"> Save card for future payments </n-checkbox>
+        <n-checkbox v-show="isSubscription" v-model:checked="bindCard">
+          Save card for future payments
+        </n-checkbox>
       </div>
       <div id="pacypay_checkout"></div>
     </div>
@@ -20,91 +22,94 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted } from "vue";
-import { NButton, NCheckbox, NDivider } from "naive-ui";
+import { defineComponent, ref, watch, onMounted } from 'vue'
+import { NButton, NCheckbox, NDivider } from 'naive-ui'
 
 export default defineComponent({
-  name: "SdkPayment",
+  name: 'SdkPayment',
   components: { NButton, NCheckbox, NDivider },
   props: {
     options: {
       type: Object,
-      required: true,
+      required: true
     },
     iframeContentLoaded: {
       type: Boolean,
-      required: true,
+      required: true
     },
     pacypay: {
       type: Object,
-      required: true,
+      required: true
     },
-    isToken: {
+    isSubscription: {
       type: Boolean,
-      required: true,
-    },
+      required: true
+    }
   },
-  emits: ['update:isToken'],
+  emits: ['update:isSubscription', 'update:bindCard'],
   setup(props, { emit }) {
-    const localIsToken = ref(props.isToken);
-    const localIframeContentLoaded = ref(false);
+    const bindCard = ref(props.isSubscription)
+    const localIframeContentLoaded = ref(false)
 
     function handleSubmit() {
-      console.log("执行自定义支付方法");
-      props.pacypay.submit();
+      console.log('执行自定义支付方法')
+      props.pacypay.submit()
     }
 
-    watch(() => props.iframeContentLoaded, (newValue) => {
-      localIframeContentLoaded.value = newValue;
-    });
+    watch(
+      () => props.iframeContentLoaded,
+      newValue => {
+        localIframeContentLoaded.value = newValue
+      }
+    )
 
-    watch(localIsToken, (newValue) => {
-      console.log('newValue', newValue)
-      emit("update:isToken", newValue);
-    });
+    watch(bindCard, (newValue) => {
+      bindCard.value = newValue
+      emit('update:bindCard', newValue)
+    })
 
     onMounted(() => {
       const checkIframeLoaded = () => {
-        const iframe = document.querySelector('#pacypay_checkout iframe') as HTMLIFrameElement;
+        const iframe = document.querySelector('#pacypay_checkout iframe') as HTMLIFrameElement
         if (iframe) {
           if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-            localIframeContentLoaded.value = true;
+            localIframeContentLoaded.value = true
           } else {
             iframe.onload = () => {
-              localIframeContentLoaded.value = true;
-            };
+              localIframeContentLoaded.value = true
+            }
           }
-          return true;
+          return true
         }
-        return false;
-      };
+        return false
+      }
 
       const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
           if (mutation.type === 'childList') {
             if (checkIframeLoaded()) {
-              observer.disconnect();
+              observer.disconnect()
             }
           }
-        });
-      });
+        })
+      })
 
       observer.observe(document.getElementById('pacypay_checkout') as Node, {
         childList: true,
         subtree: true
-      });
+      })
 
       // 以防 iframe 已经存在但还没有加载完成
-      checkIframeLoaded();
-    });
+      checkIframeLoaded()
+    })
 
     return {
-      localIsToken,
+      bindCard,
       localIframeContentLoaded,
-      handleSubmit,
-    };
-  },
-});
+      handleSubmit
+    }
+  }
+})
 </script>
 
 <style scoped>

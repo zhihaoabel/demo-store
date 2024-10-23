@@ -22,101 +22,57 @@ export default defineComponent({
     
     const products: Product[] = [
       {
-        id: 1,
-        name: 'Image 1',
-        price: 10.99,
-        currency: currency.getCurrency(),
-        quantity: 0,
-        image: iphone13,
-        description: 'This is an image 1 description.',
-        link: '/detail',
-        paymentMethod: 'standard'
-      },
-      {
-        id: 2,
-        name: 'Image 2',
-        price: 20,
-        currency: currency.getCurrency(),
-        quantity: 0,
-        image: samsung,
-        description: 'This is an image 2 description.',
-        link: '/detail',
-        paymentMethod: 'standard'
-      },
-      {
-        id: 3,
-        name: 'Image 3',
-        price: 30,
-        currency: currency.getCurrency(),
-        quantity: 0,
-        image: pixel6,
-        description: 'This is an image 3 description.',
-        link: '/detail',
-        paymentMethod: 'standard'
-      },
-      {
-        id: 4,
-        name: 'Image 4',
-        price: 40,
-        currency: currency.getCurrency(),
-        quantity: 0,
-        image: macbook,
-        description: 'This is an image 4 description.',
-        link: '/detail',
-        paymentMethod: 'standard'
-      },
-      {
         id: 5,
-        name: 'Image 5',
+        name: 'Checkout(Onerway-hosted)',
         price: 50,
         currency: currency.getCurrency(),
         quantity: 0,
         image: dell,
-        description: 'This is an image 5 description.',
+        description: 'Customer will be redirected to Onerway payment page',
         link: '/detail',
-        paymentMethod: 'standard'
+        paymentMethod: 'checkout'
       },
       {
         id: 6,
-        name: 'LocalPayment',
+        name: 'Direct Payment',
         price: 60,
         currency: currency.getCurrency(),
         quantity: 0,
         image: sony,
-        description: 'This is an image 6 description.',
+        description: 'It supports local wallets and card payment',
         link: '/detail',
         paymentMethod: 'local-payment'
       },
       {
         id: 7,
-        name: 'SDK-Checkout',
+        name: 'SDK-Checkout(embedded form)',
         price: 45,
         currency: currency.getCurrency(),
         quantity: 0,
         image: bose,
-        description: 'This is an image 7 description.',
+        description: 'Standard checkout form that does not require redirect',
         link: '/detail',
         paymentMethod: 'sdk-checkout'
       },
       {
         id: 8,
-        name: 'SDK-Token',
+        name: 'SDK-Token(embedded form)',
         price: 75,
         currency: currency.getCurrency(),
         quantity: 0,
         image: watch,
-        description: 'This is an image 8 description.',
+        description: 'Standard token form that does not require redirect',
         link: '/detail',
         paymentMethod: 'sdk-token'
       },
       {
         id: 9,
-        name: 'SDK-Subscription',
+        name: 'SDK-Subscription(embedded form)',
         price: 300,
         currency: currency.getCurrency(),
         quantity: 0,
         image: fitbit,
-        description: 'This is an image 9 description.',
+        description: 'Standard subscription form that does not require redirect',
         link: '/detail',
         paymentMethod: 'sdk-subscription'
       }

@@ -5,6 +5,7 @@
       :key="payment"
       :name="payment.toLowerCase()"
       :title="payment"
+      class="px-4"
     >
       <template #header-extra>
         <!--  todo: 支付icon  -->

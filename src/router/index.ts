@@ -36,6 +36,11 @@ export const routes = [
         component: () => import('../views/CheckoutView.vue')
       },
       {
+        path: '/standard-checkout',
+        name: 'standard-checkout',
+        component: () => import('../views/checkout/CheckoutPaymentView.vue')
+      },
+      {
         path: '/success',
         name: 'success',
         component: () => import('../views/SuccessView.vue')
@@ -49,11 +54,6 @@ export const routes = [
         path: '/cart',
         name: 'cart',
         component: () => import('../views/CartView.vue')
-      },
-      {
-        path: '/ga',
-        name: 'google-apple-pay',
-        component: () => import('@/views/GoogleApplePayView.vue')
       },
       {
         path: '/order',
@@ -78,7 +78,7 @@ export const routes = [
       {
         path: '/local-payment',
         name: 'local-payment',
-        component: () => import('@/views/LocalPaymentView.vue')
+        component: () => import('@/views/direct-payment/LocalPaymentView.vue')
       }
     ]
   }

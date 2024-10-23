@@ -20,7 +20,8 @@
         :options="options"
         :iframe-content-loaded="iframeContentLoaded"
         :pacypay="pacypay"
-        v-model:is-token="isToken"
+        :is-subscription="isSubscription"
+        v-model:bind-card="bindCard"
       />
       <div id="ga_container" style="height: 40px"></div>
       <div id="apple_container" class="my-3" style="height: 40px"></div>
@@ -66,7 +67,7 @@ export default defineComponent({
   },
   setup(props) {
     const router = useRouter()
-    const isToken = computed(() => props.paymentType === 'sdk-token')
+    const isSubscription = ref<boolean>(props.paymentType === 'sdk-subscription')
     const iframeContentLoaded = ref(false)
     const pacypay = ref<any>({})
     const googlePay = ref<any>(null)
@@ -76,6 +77,7 @@ export default defineComponent({
       products.value.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0)
     )
     const message = useMessage()
+    const bindCard = ref<boolean>(true)
 
     const handlePaymentCompleted = async (res: any) => {
       const { respCode, respMsg, data: txtInfo } = res
@@ -116,7 +118,7 @@ export default defineComponent({
       }
     }
 
-    // Credit card payment options
+    // 信用卡 options
     const options = computed(() => ({
       container: 'pacypay_checkout',
       onPaymentCompleted: handlePaymentCompleted,
@@ -124,7 +126,7 @@ export default defineComponent({
       environment: props.config.prefix === 'prod' ? 'production' : 'sandbox',
       mode: 'CARD',
       config: {
-        subProductType: isToken.value ? 'TOKEN' : 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
+        subProductType: props.paymentType === 'sdk-token' ? 'TOKEN' : 'DIRECT', // DIRECT-直接支付，TOKEN-token绑卡并支付（必须和下单接口中subProductType值保持一致）
         checkoutTheme: 'light', // light、dark
         customCssURL: '', // 自定义样式链接地址，配置该值后，checkoutTheme 则无效
         buttonSeparation: false,
@@ -274,9 +276,10 @@ export default defineComponent({
         case 'sdk-card':
           return placeDirectOrder
         case 'sdk-token':
-          return isToken.value ? placeTokenOrder : placeDirectOrder
+          return placeTokenOrder
         case 'sdk-subscription':
-          return placeSubscriptionOrder
+          return (amount: string, config: PaymentConfig) =>
+            placeSubscriptionOrder(amount, config, bindCard.value)
         default:
           return placeDirectOrder
       }
@@ -305,7 +308,10 @@ export default defineComponent({
     // Google/Apple 下单
     const googleAppleOrder = async () => {
       const orderFunction =
-        props.paymentType === 'sdk-subscription' ? placeSubscriptionOrder : placeDirectOrder
+        props.paymentType === 'sdk-subscription'
+          ? (amount: string, config: PaymentConfig) =>
+              placeSubscriptionOrder(amount, config, bindCard.value)
+          : placeDirectOrder
       const req: object = await orderFunction(totalPrice.value.toString(), props.config)
       try {
         const res = await api.post(`${props.config.prefix}/v1/sdkTxn/doTransaction`, req)
@@ -338,14 +344,23 @@ export default defineComponent({
       }
     )
 
+    // 监听 bindCard
+    watch(
+      () => bindCard.value,
+      async () => {
+        await pullUpSDK()
+      }
+    )
+
     return {
       options,
-      isToken,
+      isSubscription,
       iframeContentLoaded,
       pacypay,
       message,
       googleOptions,
-      appleOptions
+      appleOptions,
+      bindCard
     }
   }
 })

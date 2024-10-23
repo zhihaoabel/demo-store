@@ -68,20 +68,23 @@ export default defineComponent({
 
       // 根据产品的 paymentMethod 决定跳转到哪个页面
       switch (this.product.paymentMethod) {
+        case 'checkout':
+          this.router.push({ name: 'standard-checkout'})
+          break
         case 'sdk-checkout':
-          this.router.push({ name: 'sdk-checkout', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'sdk-checkout'})
           break
         case 'sdk-token':
-          this.router.push({ name: 'sdk-token', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'sdk-token'})
           break
         case 'sdk-subscription':
-          this.router.push({ name: 'sdk-subscription', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'sdk-subscription'})
           break
         case 'afterpay':
-          this.router.push({ name: 'afterpay', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'afterpay'})
           break
         case 'local-payment':
-          this.router.push({ name: 'local-payment', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'local-payment'})
           break
         case 'other':
           // 可以添加其他支付方式的路由
@@ -90,7 +93,7 @@ export default defineComponent({
         default:
           console.error('Unknown payment method:', this.product.paymentMethod)
           // 可以在这里设置一个默认的跳转页面
-          this.router.push({ name: 'checkout', query: { date: new Date().getTime() } })
+          this.router.push({ name: 'standard-checkout'})
       }
     }
   }

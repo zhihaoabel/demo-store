@@ -1,7 +1,9 @@
 <script lang="ts">
 import ProductSummary from '@/components/products/product-checkout/product-summary.vue'
-import SdkCheckoutPayment from '@/components/payments/sdk-checkout-payment.vue'
+import DirectPayment from '@/components/products/product-checkout/direct-payment.vue'
+import LocalPayment from '@/components/products/product-checkout/local-payment.vue'
 import CommonToast from '@/components/common/common-toast.vue'
+import StandardCheckoutPayment from '@/components/products/product-checkout/standard-checkout-payment.vue'
 import CommonCopyButton from '@/components/common/common-copy-button.vue'
 import {
   defineComponent,
@@ -17,32 +19,39 @@ import { Product } from '@/entities/Product'
 import { useCartStore } from '@/stores/cart'
 import { NAlert, useMessage } from 'naive-ui'
 import type { MessageRenderMessage } from 'naive-ui'
-import { type PaymentConfig } from '@/utils/payment-request'
 import { useCurrencyStore } from '@/stores/currency'
+import api from '@/utils/api'
+import { type PaymentConfig, placeCheckoutOrder } from '@/utils/payment-request'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
-  name: 'SDKCheckOutView',
+  name: 'CheckoutPaymentView',
   components: {
     ProductSummary,
-    SdkCheckoutPayment,
+    DirectPayment,
+    LocalPayment,
     CommonToast,
     CommonCopyButton
   },
   setup() {
     const cart = useCartStore()
+    const currency = useCurrencyStore()
+    const router = useRouter()
     let products: Ref<UnwrapRef<Product[]>> = ref<Product[]>({} as Product[])
     const message = useMessage()
-    const paymentType = ref('sdk-checkout') // 默认使用 sdk-card
-    // sdk 默认使用800209测试商户
+    const currentCountry = ref('')
+    const showSpin = ref(false)
+    const qrCode = ref('')
+    const selectedPayment = ref('')
+    const showQrCode = ref(false)
+    const supportedPayments = ref(currency.getSupportedPayments())
+    const totalPrice = ref(0)
     const config = ref<PaymentConfig>({
       MERCHANT_NO: '800209',
       APP_ID: '1831944691027152896',
       APP_SECRET: '59c5b49a58c74340b28ecc68004e815a',
       prefix: 'api'
     })
-    const currency = useCurrencyStore()
-    const currentCountry = ref(currency.getCountry())
-    const totalPrice = ref(0)
 
     const toast = ref({
       show: true,
@@ -102,23 +111,48 @@ export default defineComponent({
       )
     }
 
-    watch(
-      () => currency.currency,
-      () => {
-        currentCountry.value = currency.getCountry()
-        // 更新配置（如果需要的话）
-        // config.value = getCurrentConfig()
-        // 重新计算总价
-        totalPrice.value = products.value.reduce(
-          (acc: number, item: any) => acc + item.price * item.quantity,
-          0
-        )
+    const doPayment = async () => {
+      if (!config.value) {
+        console.error('Payment configuration is undefined')
+        message.error('Payment configuration is missing', {
+          closable: true,
+          duration: 5000
+        })
+        return
       }
-    )
+      showSpin.value = true
+      const data = await placeCheckoutOrder(totalPrice.value.toString(), config.value)
+
+      try {
+        const res: any = await api.post(`${config.value.prefix}/txn/payment`, { ...data })
+        const { data: responseData, respCode, respMsg } = res
+        showSpin.value = false
+
+        if (respCode === '20000' && respMsg === 'Success') {
+          const redirectUrl = responseData.redirectUrl
+          redirectUrl && window.open(redirectUrl, '_blank')
+        } else {
+          console.log('Payment failed', respMsg)
+          message.error(respMsg, {
+            closable: true,
+            duration: 5000
+          })
+        }
+      } catch (err) {
+        console.error('Payment error:', err)
+        message.error('An error occurred during payment processing', {
+          closable: true,
+          duration: 5000
+        })
+      } finally {
+        showSpin.value = false
+      }
+    }
 
     onBeforeMount(() => {
       // 优先从localStorage中获取直接下单的商品
       const directOrderProduct = ref(localStorage.getItem('directOrderProduct'))
+
       if (directOrderProduct.value) {
         products.value = [JSON.parse(directOrderProduct.value)]
         cart.directOrderProduct = JSON.parse(directOrderProduct.value)
@@ -128,6 +162,7 @@ export default defineComponent({
         )
         return
       }
+
       // 直接下单和购物车二选一
       if (cart.directOrderProduct.id) {
         products.value = [cart.directOrderProduct]
@@ -140,6 +175,14 @@ export default defineComponent({
       )
     })
 
+    watch(
+      () => currency.currency,
+      () => {
+        currentCountry.value = currency.getCountry()
+        supportedPayments.value = currency.getSupportedPayments()
+      }
+    )
+
     onUnmounted(() => {
       // 清除直接下单的商品
       localStorage.removeItem('directOrderProduct')
@@ -150,11 +193,16 @@ export default defineComponent({
       toast,
       copyButton,
       copyContent,
-      paymentType,
+      supportedPayments,
+      showSpin,
+      qrCode,
+      selectedPayment,
+      showQrCode,
+      totalPrice,
       config,
-      currency,
+      doPayment,
       currentCountry,
-      totalPrice
+      router
     }
   }
 })
@@ -168,14 +216,14 @@ export default defineComponent({
       :data="products"
       class="w-full mx-auto max-w-96 sm:border-r-2 border-slate-100"
     />
-    <sdk-checkout-payment
-      :data="products"
-      :payment-type="paymentType"
-      :config="config"
-      :current-country="currentCountry"
-      :total-price="totalPrice"
-      class="col-span-2"
-    />
+    <div class="col-span-2">
+      <StandardCheckoutPayment
+        :show-spin="showSpin"
+        :show-qr-code="showQrCode"
+        :qr-code="qrCode"
+        @do-payment="doPayment"
+      />
+    </div>
     <common-toast :data="toast">
       <template #message>
         <p class="text-sm" v-html="toast.defaultMessage"></p>
