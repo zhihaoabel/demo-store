@@ -167,7 +167,7 @@ export async function buildSubscriptionInfo (
   subscriptionInfo['frequencyType'] = frequencyType
   subscriptionInfo['frequencyPoint'] = frequencyPoint
   subscriptionInfo['bindCard'] = bindCard
-  subscriptionInfo['productName'] = Date.parse(new Date().toString()).toString()
+  subscriptionInfo['productName'] = productName ? productName : Date.parse(new Date().toString()).toString()
 
   return JSON.stringify(subscriptionInfo)
 }
@@ -217,7 +217,8 @@ async function createSubscriptionRequestBuilder (
   walletAccountId: string = '',
   productType: string = 'LPMS',
   config: PaymentConfig,
-  bindCard: boolean = false
+  bindCard: boolean = false,
+  productName: string = ''
 ) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
@@ -233,7 +234,7 @@ async function createSubscriptionRequestBuilder (
     .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
     .setSign('')
     .setSubProductType('SUBSCRIBE')
-    .setSubscription(await buildSubscriptionInfo(undefined, undefined, undefined, undefined, undefined, bindCard))
+    .setSubscription(await buildSubscriptionInfo(undefined, undefined, undefined, undefined, undefined, bindCard, productName))
     .setTxnType('SALE')
     .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config))
     .build()
@@ -252,7 +253,9 @@ async function createSDKTokenRequestBuilder (
   iban: string = '',
   walletAccountId: string = '',
   productType: string = 'LPMS',
-  config: PaymentConfig
+  config: PaymentConfig,
+  bindCard: boolean = false,
+  productName: string = ''
 ) {
   const request = new PaymentRequestBuilder()
     .setBillingInformation(buildBillingInformation(country, phone, identityNumber))
@@ -268,7 +271,7 @@ async function createSDKTokenRequestBuilder (
     .setShippingInformation(buildShippingInformation(country, phone, identityNumber))
     .setSign('')
     .setSubProductType('TOKEN')
-    .setSubscription(await buildSubscriptionInfo())
+    .setSubscription(await buildSubscriptionInfo(undefined, undefined, undefined, undefined, undefined, bindCard, productName))
     .setTxnType('SALE')
     .setTxnOrderMsg(buildTxnOrderMsg(amount, currency, config))
     .build()
@@ -453,6 +456,20 @@ export async function queryTransaction (
   )
 }
 
+export async function unbindCard (
+  id: string,
+  config: PaymentConfig
+) {
+  const request = new PaymentRequestBuilder()
+    .setId(id)
+    .setMerchantNo(config.MERCHANT_NO)
+    .setSign('')
+    .build()
+
+  request['sign'] = await generateSign(request, [], config.APP_SECRET)
+  return request
+}
+
 export function placeCheckoutOrder (amount: string, config: PaymentConfig) {
   return createCheckoutRequestBuilder(
     '',
@@ -498,7 +515,7 @@ export function placeTokenOrder (amount: string, config: PaymentConfig) {
   )
 }
 
-export function placeSubscriptionOrder (amount: string, config: PaymentConfig, bindCard: boolean) {
+export function placeSubscriptionOrder (amount: string, config: PaymentConfig, bindCard: boolean, productName: string) {
   return createSubscriptionRequestBuilder(
     '',
     'US',
@@ -510,7 +527,8 @@ export function placeSubscriptionOrder (amount: string, config: PaymentConfig, b
     '',
     'CARD',
     config,
-    bindCard
+    bindCard,
+    productName
   )
 }
 

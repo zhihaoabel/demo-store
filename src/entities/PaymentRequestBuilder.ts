@@ -5,6 +5,11 @@ class PaymentRequestBuilder {
     this.requestParams = {}
   }
 
+  setId(id: string) {
+    this.requestParams.id = id
+    return this
+  }
+
   setAppId(appId: string) {
     this.requestParams.appId = appId
     return this

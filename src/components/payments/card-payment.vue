@@ -15,6 +15,7 @@ import {
   getCurrentConfig,
   payByTokenId,
   queryToken,
+  unbindCard,
   type PaymentConfig
 } from '@/utils/payment-request'
 import api from '@/utils/api'
@@ -176,13 +177,14 @@ export default defineComponent({
         })
     }
 
-    function deleteCard(card: TokenInfo) {
+    async function deleteCard(card: TokenInfo) {
       showDeleteSpin.value = true
       const { id } = card
+      const req = await unbindCard(id, config.value)
 
       setTimeout(() => {
         api
-          .post(`/internal/api/v1/sdkTxn/unbindCard/ + ${id}`)
+          .post(`${config.value.prefix}/v1/txn/unbindCard`, req)
           .then((res: any) => {
             const { respCode, respMsg } = res
             if (respCode === '20000' && respMsg === 'Success') {

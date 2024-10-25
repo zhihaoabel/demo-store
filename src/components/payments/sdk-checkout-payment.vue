@@ -279,7 +279,7 @@ export default defineComponent({
           return placeTokenOrder
         case 'sdk-subscription':
           return (amount: string, config: PaymentConfig) =>
-            placeSubscriptionOrder(amount, config, bindCard.value)
+            placeSubscriptionOrder(amount, config, bindCard.value, '1111')
         default:
           return placeDirectOrder
       }
@@ -310,7 +310,7 @@ export default defineComponent({
       const orderFunction =
         props.paymentType === 'sdk-subscription'
           ? (amount: string, config: PaymentConfig) =>
-              placeSubscriptionOrder(amount, config, bindCard.value)
+              placeSubscriptionOrder(amount, config, bindCard.value, '1111')
           : placeDirectOrder
       const req: object = await orderFunction(totalPrice.value.toString(), props.config)
       try {
