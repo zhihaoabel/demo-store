@@ -488,10 +488,10 @@ export function placeCheckoutOrder (amount: string, config: PaymentConfig) {
 export function placeDirectOrder (amount: string, config: PaymentConfig) {
   return createPaymentRequestBuilder(
     '',
-    'GB',
+    'US',
     '177' + fakerEN_US.string.numeric(8),
     amount,
-    'GBP',
+    'USD',
     '86258406122',
     '',
     '',
